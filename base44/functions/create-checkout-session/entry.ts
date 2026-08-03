@@ -58,6 +58,16 @@ export default async function(req) {
       }))
     });
 
+    // Soft-reserve stock — does NOT deduct; true deduction happens at pick verification
+    for (const i of items) {
+      const product = await base44.asServiceRole.entities.Product.get(i.product_id);
+      if (product) {
+        await base44.asServiceRole.entities.Product.update(i.product_id, {
+          reserved_quantity: Number(product.reserved_quantity || 0) + Number(i.quantity)
+        });
+      }
+    }
+
     // Build Stripe checkout session
     const stripe = new Stripe(secrets.get('STRIPE_SECRET_KEY'));
     const origin = new URL(req.url).origin;

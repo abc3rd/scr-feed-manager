@@ -2,18 +2,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import Stripe from 'npm:stripe@17.3.1';
 import { secrets } from 'base44:runtime';
 
-// Tier thresholds based on lifetime points
-const TIER_THRESHOLDS = [
-  { tier: 'platinum', min: 2000 },
-  { tier: 'gold', min: 1000 },
-  { tier: 'silver', min: 500 },
-  { tier: 'bronze', min: 0 }
-];
-
-function tierFor(lifetimePoints) {
-  return TIER_THRESHOLDS.find(t => lifetimePoints >= t.min).tier;
-}
-
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -32,27 +20,11 @@ export default async function(req) {
       const orderId = session.metadata?.order_id;
 
       if (orderId) {
-        // Mark the order as paid (fulfillment status stays pending — two-step flow)
+        // Mark the order as paid. Fulfillment status stays pending (two-step flow).
+        // Loyalty points are awarded at pick-ticket completion, not at payment.
         await base44.asServiceRole.entities.Order.update(orderId, {
           payment_status: 'paid'
         });
-
-        const order = await base44.asServiceRole.entities.Order.get(orderId);
-        // Award loyalty points: 1 point per $1 spent
-        const pointsEarned = Math.floor(Number(order.total || 0));
-        await base44.asServiceRole.entities.Order.update(orderId, { points_earned: pointsEarned });
-
-        if (order.user_id && pointsEarned > 0) {
-          const user = await base44.asServiceRole.entities.User.get(order.user_id);
-          const newPoints = Number(user.loyalty_points || 0) + pointsEarned;
-          const newLifetime = Number(user.lifetime_points || 0) + pointsEarned;
-          const newTier = tierFor(newLifetime);
-          await base44.asServiceRole.entities.User.update(order.user_id, {
-            loyalty_points: newPoints,
-            lifetime_points: newLifetime,
-            loyalty_tier: newTier
-          });
-        }
       }
     }
 
