@@ -9,7 +9,10 @@
       "type": "string"
     },
     "user_id": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "The customer the order belongs to."
     },
     "status": {
@@ -62,24 +65,32 @@
       }
     },
     "assigned_to": {
-      "type": "string",
-      "description": "Staff user assigned to pick the order."
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "verified_by": {
-      "type": "string",
-      "description": "Staff user who confirmed physical counts at the loading dock."
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "verified_at": {
-      "type": "string",
-      "format": "date-time"
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "notes": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
     }
   },
   "required": [
     "order_id",
-    "user_id",
     "status",
     "pick_items"
   ]

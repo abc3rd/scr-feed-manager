@@ -6,7 +6,10 @@
       "type": "string"
     },
     "user_id": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "status": {
       "type": "string",
@@ -19,6 +22,22 @@
       ],
       "default": "pending",
       "description": "pending = order placed, awaiting pick ticket verification. Inventory is NOT deducted at this stage."
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "unpaid",
+        "paid",
+        "refunded",
+        "failed"
+      ],
+      "default": "unpaid"
+    },
+    "stripe_session_id": {
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "items": {
       "type": "array",
@@ -64,7 +83,10 @@
       "type": "number"
     },
     "tier_applied": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "Loyalty tier used to compute the discount at checkout."
     },
     "points_earned": {
@@ -76,11 +98,13 @@
       "default": 0
     },
     "notes": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
     }
   },
   "required": [
-    "user_id",
     "status",
     "items",
     "total"
