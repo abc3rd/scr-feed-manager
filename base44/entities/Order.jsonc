@@ -15,13 +15,14 @@
       "type": "string",
       "enum": [
         "pending",
+        "ticket_generated",
         "picking",
-        "picked",
+        "partially_fulfilled",
         "completed",
         "cancelled"
       ],
       "default": "pending",
-      "description": "pending = order placed, awaiting pick ticket verification. Inventory is NOT deducted at this stage."
+      "description": "pending = order placed. ticket_generated = pick ticket(s) created. picking = yard worker assigned. partially_fulfilled = some tickets done, others open. completed = ALL tickets done; loyalty points awarded at this transition only."
     },
     "payment_status": {
       "type": "string",

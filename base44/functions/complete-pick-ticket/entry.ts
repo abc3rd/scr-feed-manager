@@ -57,6 +57,15 @@ export default async function(req) {
       return item;
     });
 
+    // Guard: block completion until every item on THIS ticket is verified
+    const unverified = updatedPickItems.filter(i => i.line_status === 'pending');
+    if (unverified.length > 0) {
+      return Response.json({
+        error: `Cannot complete ticket: ${unverified.length} unverified item(s) remain`,
+        ticket_number: ticket.ticket_number
+      }, { status: 400 });
+    }
+
     // STEP 1 — Deduct verified inventory from Products + release the soft-reserved hold
     for (const item of updatedPickItems) {
       const deduct = Number(item.verified_quantity || 0);
@@ -82,37 +91,60 @@ export default async function(req) {
       notes: notes || ticket.notes
     });
 
-    // STEP 3 — Elevate parent Order to 'completed' and calculate points (1 pt / $1)
+    // STEP 3 — Check sibling tickets on the same order
+    const siblingTickets = await base44.asServiceRole.entities.PickTicket.filter(
+      { order_id: ticket.order_id },
+      '-created_date',
+      100
+    );
+    const openSiblings = siblingTickets.filter(t => t.id !== ticket_id && t.status !== 'done');
+
     const order = await base44.asServiceRole.entities.Order.get(ticket.order_id);
     let pointsEarned = 0;
-    if (order) {
-      pointsEarned = Math.floor(Number(order.total || 0));
-      await base44.asServiceRole.entities.Order.update(ticket.order_id, {
-        status: 'completed',
-        points_earned: pointsEarned
-      });
+    let orderStatus = 'partially_fulfilled';
 
-      // STEP 4 — Credit SCR Stars Club loyalty points + recompute tier
-      if (order.user_id && pointsEarned > 0) {
-        const customer = await base44.asServiceRole.entities.User.get(order.user_id);
-        if (customer) {
-          const newPoints = Number(customer.loyalty_points || 0) + pointsEarned;
-          const newLifetime = Number(customer.lifetime_points || 0) + pointsEarned;
-          const newTier = tierFor(newLifetime);
-          await base44.asServiceRole.entities.User.update(order.user_id, {
-            loyalty_points: newPoints,
-            lifetime_points: newLifetime,
-            loyalty_tier: newTier
-          });
+    if (openSiblings.length === 0 && order) {
+      // This was the last open ticket — close out the order and award points ONCE.
+      // Idempotency guard: only credit if the order isn't already completed (race protection).
+      if (order.status !== 'completed') {
+        orderStatus = 'completed';
+        pointsEarned = Math.floor(Number(order.total || 0));
+        await base44.asServiceRole.entities.Order.update(ticket.order_id, {
+          status: 'completed',
+          points_earned: pointsEarned
+        });
+
+        // STEP 4 — Credit SCR Stars Club loyalty points + recompute tier
+        if (order.user_id && pointsEarned > 0) {
+          const customer = await base44.asServiceRole.entities.User.get(order.user_id);
+          if (customer) {
+            const newPoints = Number(customer.loyalty_points || 0) + pointsEarned;
+            const newLifetime = Number(customer.lifetime_points || 0) + pointsEarned;
+            const newTier = tierFor(newLifetime);
+            await base44.asServiceRole.entities.User.update(order.user_id, {
+              loyalty_points: newPoints,
+              lifetime_points: newLifetime,
+              loyalty_tier: newTier
+            });
+          }
         }
+      } else {
+        orderStatus = 'completed';
       }
+    } else if (order) {
+      // Other tickets still pending — order is only partially fulfilled, no points yet
+      await base44.asServiceRole.entities.Order.update(ticket.order_id, {
+        status: 'partially_fulfilled'
+      });
     }
 
     return Response.json({
       success: true,
       ticket_number: ticket.ticket_number,
       order_id: ticket.order_id,
+      order_status: orderStatus,
       points_earned: pointsEarned,
+      open_tickets_remaining: openSiblings.length,
       completed_at: now,
       verified_by: user.id
     });
