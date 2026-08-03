@@ -1,0 +1,88 @@
+{
+  "name": "Order",
+  "type": "object",
+  "properties": {
+    "order_number": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "picking",
+        "picked",
+        "completed",
+        "cancelled"
+      ],
+      "default": "pending",
+      "description": "pending = order placed, awaiting pick ticket verification. Inventory is NOT deducted at this stage."
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "unit_of_measure": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unit_price": {
+            "type": "number"
+          },
+          "line_total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "product_id",
+          "name",
+          "quantity",
+          "unit_price",
+          "line_total"
+        ]
+      }
+    },
+    "subtotal": {
+      "type": "number"
+    },
+    "discount_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "total": {
+      "type": "number"
+    },
+    "tier_applied": {
+      "type": "string",
+      "description": "Loyalty tier used to compute the discount at checkout."
+    },
+    "points_earned": {
+      "type": "number",
+      "default": 0
+    },
+    "points_redeemed": {
+      "type": "number",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "status",
+    "items",
+    "total"
+  ]
+}

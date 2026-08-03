@@ -1,0 +1,39 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "staff",
+        "customer"
+      ],
+      "default": "customer"
+    },
+    "loyalty_points": {
+      "type": "number",
+      "default": 0
+    },
+    "loyalty_tier": {
+      "type": "string",
+      "enum": [
+        "bronze",
+        "silver",
+        "gold",
+        "platinum"
+      ],
+      "default": "bronze"
+    },
+    "lifetime_points": {
+      "type": "number",
+      "default": 0
+    },
+    "phone": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "role"
+  ]
+}

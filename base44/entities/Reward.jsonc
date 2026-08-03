@@ -1,0 +1,40 @@
+{
+  "name": "Reward",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "points_cost": {
+      "type": "number",
+      "description": "Points a customer must accumulate to unlock this reward."
+    },
+    "discount_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Percentage discount applied at checkout when reward is redeemed."
+    },
+    "tier_required": {
+      "type": "string",
+      "enum": [
+        "bronze",
+        "silver",
+        "gold",
+        "platinum"
+      ],
+      "default": "bronze"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "points_cost",
+    "tier_required"
+  ]
+}

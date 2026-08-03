@@ -1,0 +1,78 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "sku": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "hay",
+        "feed",
+        "grain",
+        "supplements",
+        "bedding",
+        "equipment",
+        "other"
+      ]
+    },
+    "price": {
+      "type": "number"
+    },
+    "unit_of_measure": {
+      "type": "string",
+      "enum": [
+        "each",
+        "bag",
+        "bale",
+        "flake",
+        "lb",
+        "ton",
+        "block",
+        "gallon"
+      ],
+      "default": "each"
+    },
+    "is_bulk": {
+      "type": "boolean",
+      "default": false
+    },
+    "stock_quantity": {
+      "type": "number",
+      "default": 0
+    },
+    "reserved_quantity": {
+      "type": "number",
+      "default": 0,
+      "description": "Stock soft-reserved by pending orders awaiting pick verification. Available = stock_quantity - reserved_quantity."
+    },
+    "reorder_threshold": {
+      "type": "number",
+      "default": 0
+    },
+    "qr_code_id": {
+      "type": "string",
+      "description": "Unique token encoded in the in-barn QR sticker. Scanning it opens this product page."
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "price",
+    "unit_of_measure",
+    "category"
+  ]
+}

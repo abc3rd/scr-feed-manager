@@ -1,0 +1,38 @@
+{
+  "name": "Announcement",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "inventory",
+        "alert",
+        "promo",
+        "general"
+      ],
+      "default": "inventory"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "Optional linked product (e.g. the hay lot that just arrived)."
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "created_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "message",
+    "type"
+  ]
+}
