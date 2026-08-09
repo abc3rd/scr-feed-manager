@@ -7,6 +7,18 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 // Add page imports here
+import Shop from './pages/Shop';
+import Cart from './pages/Cart';
+import OrderSuccess from './pages/OrderSuccess';
+import Orders from './pages/Orders';
+import OrderDetail from './pages/OrderDetail';
+import Fulfillment from './pages/Fulfillment';
+import AppLayout from './components/AppLayout';
+import { CartProvider } from './lib/CartContext';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -34,7 +46,18 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<Shop />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/order-success" element={<OrderSuccess />} />
+        <Route path="/orders" element={<Orders />} />
+        <Route path="/orders/:id" element={<OrderDetail />} />
+        <Route path="/fulfillment" element={<Fulfillment />} />
+      </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
@@ -46,10 +69,12 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
+        <CartProvider>
         <Router>
           <ScrollToTop />
           <AuthenticatedApp />
         </Router>
+        </CartProvider>
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
