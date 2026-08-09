@@ -12,7 +12,7 @@ export default function AppLayout() {
   const isStaff = user && (user.role === 'admin' || user.role === 'staff');
 
   const navItems = [
-    { to: '/', label: 'Shop', icon: ShoppingBag, exact: true },
+    { to: '/shop', label: 'Shop', icon: ShoppingBag, exact: true },
     { to: '/cart', label: 'Cart', icon: ShoppingCart, badge: count },
     { to: '/orders', label: 'Orders', icon: Package },
   ];
