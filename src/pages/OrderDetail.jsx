@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ const TICKET_STATUS_STYLES = {
 
 export default function OrderDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +44,7 @@ export default function OrderDetail() {
   if (!order) return (
     <div className="text-center py-20 space-y-4">
       <p className="text-muted-foreground">Order not found.</p>
-      <Button onClick={() => (window.location.href = '/orders')}>Back to Orders</Button>
+      <Button onClick={() => navigate('/orders')}>Back to Orders</Button>
     </div>
   );
 

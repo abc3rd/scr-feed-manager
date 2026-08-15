@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import OrderStatusBadge from '@/components/OrderStatusBadge';
 
 export default function OrderSuccess() {
   const [params] = useSearchParams();
+  const navigate = useNavigate();
   const orderId = params.get('order_id');
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -53,8 +54,8 @@ export default function OrderSuccess() {
       </div>
 
       <div className="flex gap-2 justify-center">
-        <Button variant="outline" onClick={() => (window.location.href = '/')}>Continue Shopping</Button>
-        <Button onClick={() => (window.location.href = '/orders')}>View Orders</Button>
+        <Button variant="outline" onClick={() => navigate('/')}>Continue Shopping</Button>
+        <Button onClick={() => navigate('/orders')}>View Orders</Button>
       </div>
     </div>
   );

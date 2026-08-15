@@ -6,7 +6,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import OrderStatusBadge from '@/components/OrderStatusBadge';
 import FulfillmentProgress from '@/components/FulfillmentProgress';
-import { Package } from 'lucide-react';
+import { Package, RotateCw } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function Orders() {
   const { user, isAuthenticated } = useAuth();
@@ -14,6 +15,7 @@ export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [ticketsByOrder, setTicketsByOrder] = useState({});
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) { setLoading(false); return; }
@@ -34,6 +36,15 @@ export default function Orders() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const refresh = async () => {
+    setRefreshing(true);
+    try {
+      await loadOrders();
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -63,7 +74,12 @@ export default function Orders() {
 
   return (
     <div className="space-y-4">
-      <h2 className="font-heading font-bold text-xl">My Orders</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="font-heading font-bold text-xl">My Orders</h2>
+        <button onClick={refresh} className="text-muted-foreground hover:text-foreground p-1" aria-label="Refresh orders">
+          <RotateCw className={cn('h-4 w-4', refreshing && 'animate-spin')} />
+        </button>
+      </div>
       {orders.map(order => {
         const tickets = ticketsByOrder[order.id] || [];
         return (

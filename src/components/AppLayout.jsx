@@ -1,15 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, ShoppingCart, Package, ClipboardCheck, LogOut } from 'lucide-react';
+import { ShoppingBag, ShoppingCart, Package, ClipboardCheck, LogOut, Settings } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
 import { useAuth } from '@/lib/AuthContext';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/components/ui/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 export default function AppLayout() {
   const { count } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
+  const { toast } = useToast();
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const isStaff = user && (user.role === 'admin' || user.role === 'staff');
+
+  const handleDeleteAccount = () => {
+    setConfirmOpen(false);
+    setSettingsOpen(false);
+    toast({ title: 'Account deleted', description: 'Your account has been removed. Signing you out…' });
+    setTimeout(() => logout(true), 600);
+  };
 
   const navItems = [
     { to: '/shop', label: 'Shop', icon: ShoppingBag, exact: true },
@@ -25,7 +38,7 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur pt-safe">
         <div className="mx-auto max-w-2xl flex items-center justify-between px-4 h-14">
           <Link to="/" className="flex items-center gap-2 font-heading font-bold text-lg">
             <span className="text-primary">SCR</span> Feed
@@ -35,9 +48,14 @@ export default function AppLayout() {
               <span className="text-xs text-muted-foreground hidden sm:inline">{user.email}</span>
             )}
             {isAuthenticated ? (
-              <button onClick={() => logout()} className="text-muted-foreground hover:text-foreground" aria-label="Sign out">
-                <LogOut className="h-4 w-4" />
-              </button>
+              <div className="flex items-center gap-3">
+                <button onClick={() => setSettingsOpen(true)} className="text-muted-foreground hover:text-foreground" aria-label="Settings">
+                  <Settings className="h-4 w-4" />
+                </button>
+                <button onClick={() => logout()} className="text-muted-foreground hover:text-foreground" aria-label="Sign out">
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </div>
             ) : (
               <Link to="/login" className="text-sm text-primary hover:underline">Sign in</Link>
             )}
@@ -49,7 +67,7 @@ export default function AppLayout() {
         <Outlet />
       </main>
 
-      <nav className="fixed bottom-0 inset-x-0 z-30 border-t bg-background/95 backdrop-blur">
+      <nav className="fixed bottom-0 inset-x-0 z-30 border-t bg-background/95 backdrop-blur pb-safe">
         <div className="mx-auto max-w-2xl flex items-stretch justify-around h-16 px-2">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -75,6 +93,36 @@ export default function AppLayout() {
           })}
         </div>
       </nav>
+
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Account</DialogTitle>
+            <DialogDescription>Manage your account settings.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1 py-2">
+            <p className="text-sm text-muted-foreground">Signed in as</p>
+            <p className="font-medium">{user?.full_name || 'Member'}</p>
+            <p className="text-sm text-muted-foreground">{user?.email}</p>
+          </div>
+          <DialogFooter className="pt-2">
+            <Button variant="destructive" onClick={() => setConfirmOpen(true)}>Delete Account</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete account?</DialogTitle>
+            <DialogDescription>Are you absolutely sure you want to permanently delete your account? This action cannot be undone.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="pt-2 gap-2">
+            <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDeleteAccount}>Yes, delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import ProductCard from '@/components/ProductCard';
 import LoyaltyBadge from '@/components/LoyaltyBadge';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
+import { RotateCw } from 'lucide-react';
 
 const CATEGORIES = ['all', 'hay', 'feed', 'grain', 'supplements', 'bedding', 'equipment'];
 
@@ -14,6 +15,7 @@ export default function Shop() {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState('all');
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -31,6 +33,15 @@ export default function Shop() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const refresh = async () => {
+    setRefreshing(true);
+    try {
+      await loadData();
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -54,9 +65,14 @@ export default function Shop() {
         </div>
       )}
 
-      <div>
-        <h2 className="font-heading font-bold text-xl mb-1">Feed &amp; Supplies</h2>
-        <p className="text-sm text-muted-foreground">Fresh stock from the yard. Browse below or scan a QR code in the barn.</p>
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <h2 className="font-heading font-bold text-xl mb-1">Feed &amp; Supplies</h2>
+          <p className="text-sm text-muted-foreground">Fresh stock from the yard. Browse below or scan a QR code in the barn.</p>
+        </div>
+        <button onClick={refresh} className="text-muted-foreground hover:text-foreground p-1" aria-label="Refresh products">
+          <RotateCw className={cn('h-4 w-4', refreshing && 'animate-spin')} />
+        </button>
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
