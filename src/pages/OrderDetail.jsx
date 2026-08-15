@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
@@ -17,28 +18,21 @@ const TICKET_STATUS_STYLES = {
 export default function OrderDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [order, setOrder] = useState(null);
-  const [tickets, setTickets] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    load();
-  }, [id]);
+  const orderQuery = useQuery({
+    queryKey: ['order', id],
+    queryFn: () => base44.entities.Order.get(id),
+    enabled: !!id,
+  });
+  const ticketsQuery = useQuery({
+    queryKey: ['pick-tickets', id],
+    queryFn: () => base44.entities.PickTicket.filter({ order_id: id }, '-created_date', 20),
+    enabled: !!id,
+  });
 
-  const load = async () => {
-    try {
-      const [o, t] = await Promise.all([
-        base44.entities.Order.get(id),
-        base44.entities.PickTicket.filter({ order_id: id }, '-created_date', 20),
-      ]);
-      setOrder(o);
-      setTickets(t);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const order = orderQuery.data ?? null;
+  const tickets = ticketsQuery.data || [];
+  const loading = orderQuery.isLoading || ticketsQuery.isLoading;
 
   if (loading) return <div className="text-center py-20 text-muted-foreground">Loading…</div>;
   if (!order) return (

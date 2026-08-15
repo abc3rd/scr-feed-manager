@@ -94,11 +94,11 @@ export default function Cart() {
               <p className="text-xs text-muted-foreground">${item.unit_price.toFixed(2)} / {item.unit_of_measure}</p>
             </div>
             <div className="flex items-center gap-1">
-              <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => updateQuantity(item.product_id, item.quantity - 1)}>
+              <Button size="icon" variant="outline" className="h-11 w-11" onClick={() => updateQuantity(item.product_id, item.quantity - 1)}>
                 <Minus className="h-3 w-3" />
               </Button>
               <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-              <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => updateQuantity(item.product_id, item.quantity + 1)}>
+              <Button size="icon" variant="outline" className="h-11 w-11" onClick={() => updateQuantity(item.product_id, item.quantity + 1)}>
                 <Plus className="h-3 w-3" />
               </Button>
             </div>

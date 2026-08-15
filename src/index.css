@@ -87,8 +87,9 @@
   }
 
   html,
-  body {
-    overscroll-behavior-y: contain;
+  body,
+  #root {
+    overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
   }
 

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { cn } from '@/lib/utils';
@@ -11,39 +12,23 @@ const CATEGORIES = ['all', 'hay', 'feed', 'grain', 'supplements', 'bedding', 'eq
 
 export default function Shop() {
   const { user, isAuthenticated } = useAuth();
-  const [products, setProducts] = useState([]);
-  const [announcements, setAnnouncements] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState('all');
-  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  const productsQuery = useQuery({
+    queryKey: ['products', 'active'],
+    queryFn: () => base44.entities.Product.filter({ is_active: true }, '-created_date', 100),
+  });
+  const announcementsQuery = useQuery({
+    queryKey: ['announcements', 'active'],
+    queryFn: () => base44.entities.Announcement.filter({ is_active: true }, '-created_date', 5),
+  });
 
-  const loadData = async () => {
-    try {
-      const [prods, anns] = await Promise.all([
-        base44.entities.Product.filter({ is_active: true }, '-created_date', 100),
-        base44.entities.Announcement.filter({ is_active: true }, '-created_date', 5),
-      ]);
-      setProducts(prods);
-      setAnnouncements(anns);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const products = productsQuery.data || [];
+  const announcements = announcementsQuery.data || [];
+  const loading = productsQuery.isLoading;
+  const refreshing = productsQuery.isFetching || announcementsQuery.isFetching;
 
-  const refresh = async () => {
-    setRefreshing(true);
-    try {
-      await loadData();
-    } finally {
-      setRefreshing(false);
-    }
-  };
+  const refresh = () => Promise.all([productsQuery.refetch(), announcementsQuery.refetch()]);
 
   const filtered = category === 'all' ? products : products.filter(p => p.category === category);
 

@@ -26,7 +26,7 @@ export default function ProductCard({ product }) {
         <p className="text-xs text-muted-foreground capitalize">{product.category} · per {product.unit_of_measure}</p>
         <div className="mt-auto flex items-center justify-between pt-2">
           <span className="font-heading font-bold">${Number(product.price).toFixed(2)}</span>
-          <Button size="sm" disabled={outOfStock} onClick={() => addItem(product)}>
+          <Button size="sm" className="h-11" disabled={outOfStock} onClick={() => addItem(product)}>
             {outOfStock ? <span className="text-xs">Sold out</span> : <Plus className="h-4 w-4" />}
           </Button>
         </div>

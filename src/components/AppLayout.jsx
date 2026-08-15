@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, ShoppingCart, Package, ClipboardCheck, LogOut, Settings } from 'lucide-react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { ShoppingBag, ShoppingCart, Package, ClipboardCheck, LogOut, Settings, ArrowLeft } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
 import { useAuth } from '@/lib/AuthContext';
 import { cn } from '@/lib/utils';
+import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -13,15 +14,24 @@ export default function AppLayout() {
   const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const isStaff = user && (user.role === 'admin' || user.role === 'staff');
 
-  const handleDeleteAccount = () => {
-    setConfirmOpen(false);
-    setSettingsOpen(false);
-    toast({ title: 'Account deleted', description: 'Your account has been removed. Signing you out…' });
-    setTimeout(() => logout(true), 600);
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      await base44.functions.invoke('delete-account', {});
+      setConfirmOpen(false);
+      setSettingsOpen(false);
+      toast({ title: 'Account deleted', description: 'Your account and data have been removed. Signing you out…' });
+      setTimeout(() => logout(true), 600);
+    } catch (err) {
+      toast({ title: 'Deletion failed', description: err.response?.data?.error || err.message, variant: 'destructive' });
+      setDeleting(false);
+    }
   };
 
   const navItems = [
@@ -36,13 +46,21 @@ export default function AppLayout() {
   const isActive = (item) =>
     item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to);
 
+  const showBack = location.pathname !== '/' && !navItems.some((item) => item.to === location.pathname);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur pt-safe">
         <div className="mx-auto max-w-2xl flex items-center justify-between px-4 h-14">
-          <Link to="/" className="flex items-center gap-2 font-heading font-bold text-lg">
-            <span className="text-primary">SCR</span> Feed
-          </Link>
+          {showBack ? (
+            <button onClick={() => navigate(-1)} className="flex items-center text-muted-foreground hover:text-foreground" aria-label="Go back">
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+          ) : (
+            <Link to="/" className="flex items-center gap-2 font-heading font-bold text-lg">
+              <span className="text-primary">SCR</span> Feed
+            </Link>
+          )}
           <div className="flex items-center gap-3">
             {isAuthenticated && user && (
               <span className="text-xs text-muted-foreground hidden sm:inline">{user.email}</span>
@@ -119,7 +137,9 @@ export default function AppLayout() {
           </DialogHeader>
           <DialogFooter className="pt-2 gap-2">
             <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDeleteAccount}>Yes, delete</Button>
+            <Button variant="destructive" onClick={handleDeleteAccount} disabled={deleting}>
+              {deleting ? 'Deleting…' : 'Yes, delete'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

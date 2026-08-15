@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
@@ -12,41 +13,27 @@ import { cn } from '@/lib/utils';
 export default function Orders() {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [orders, setOrders] = useState([]);
-  const [ticketsByOrder, setTicketsByOrder] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    if (!isAuthenticated) { setLoading(false); return; }
-    loadOrders();
-  }, [isAuthenticated]);
-
-  const loadOrders = async () => {
-    try {
+  const ordersQuery = useQuery({
+    queryKey: ['orders', user?.id],
+    enabled: !!isAuthenticated && !!user?.id,
+    queryFn: async () => {
       const myOrders = await base44.entities.Order.filter({ user_id: user.id }, '-created_date', 50);
-      setOrders(myOrders);
       const ticketMap = {};
       await Promise.all(myOrders.map(async (o) => {
         const tickets = await base44.entities.PickTicket.filter({ order_id: o.id }, '-created_date', 20);
         ticketMap[o.id] = tickets;
       }));
-      setTicketsByOrder(ticketMap);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return { orders: myOrders, ticketsByOrder: ticketMap };
+    },
+  });
 
-  const refresh = async () => {
-    setRefreshing(true);
-    try {
-      await loadOrders();
-    } finally {
-      setRefreshing(false);
-    }
-  };
+  const orders = ordersQuery.data?.orders || [];
+  const ticketsByOrder = ordersQuery.data?.ticketsByOrder || {};
+  const loading = ordersQuery.isLoading;
+  const refreshing = ordersQuery.isFetching;
+
+  const refresh = () => ordersQuery.refetch();
 
   if (!isAuthenticated) {
     return (
