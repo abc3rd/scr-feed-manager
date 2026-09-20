@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { cn } from '@/lib/utils';
 import ProductCard from '@/components/ProductCard';
+import TrendingNow from '@/components/TrendingNow';
 import LoyaltyBadge from '@/components/LoyaltyBadge';
 import LoyaltyProgress from '@/components/LoyaltyProgress';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
@@ -24,13 +25,18 @@ export default function Shop() {
     queryKey: ['announcements', 'active'],
     queryFn: () => base44.entities.Announcement.filter({ is_active: true }, '-created_date', 5),
   });
+  const trendingQuery = useQuery({
+    queryKey: ['trending-products'],
+    queryFn: async () => (await base44.functions.invoke('trending-products', {})).data,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const products = productsQuery.data || [];
   const announcements = announcementsQuery.data || [];
   const loading = productsQuery.isLoading;
   const refreshing = productsQuery.isFetching || announcementsQuery.isFetching;
 
-  const refresh = () => Promise.all([productsQuery.refetch(), announcementsQuery.refetch()]);
+  const refresh = () => Promise.all([productsQuery.refetch(), announcementsQuery.refetch(), trendingQuery.refetch()]);
 
   const filtered = category === 'all' ? products : products.filter(p => p.category === category);
 
@@ -65,6 +71,8 @@ export default function Shop() {
           <RotateCw className={cn('h-4 w-4', refreshing && 'animate-spin')} />
         </button>
       </div>
+
+      <TrendingNow products={products} trending={trendingQuery.data?.trending} />
 
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
         {CATEGORIES.map(c => (
