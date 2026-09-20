@@ -1,0 +1,44 @@
+{
+  "description": "Daily check for products at or below their reorder threshold; emails admins to restock on time.",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "low_stock_alert",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "check_stock": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "low-stock-alert"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Check low stock & notify",
+            "description": "Email admins about products below reorder point"
+          }
+        }
+      }
+    ]
+  },
+  "name": "Low Stock Alert",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 8 * * *",
+      "one_time_date": null,
+      "timezone": "America/New_York",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

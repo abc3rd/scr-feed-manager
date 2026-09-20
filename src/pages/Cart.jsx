@@ -7,13 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Trash2, Minus, Plus, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-
-const TIER_DISCOUNTS = {
-  bronze: 0,
-  silver: 0.05,
-  gold: 0.10,
-  platinum: 0.15,
-};
+import { TIER_DISCOUNTS } from '@/lib/loyalty';
 
 export default function Cart() {
   const { items, updateQuantity, removeItem, clear, subtotal } = useCart();

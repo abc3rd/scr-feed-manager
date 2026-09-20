@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, Suspense } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingBag, ShoppingCart, Package, ClipboardCheck, LogOut, Settings, ArrowLeft } from 'lucide-react';
+import { ShoppingBag, ShoppingCart, Package, ClipboardCheck, BarChart3, LogOut, Settings, ArrowLeft } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
 import { useAuth } from '@/lib/AuthContext';
 import { cn } from '@/lib/utils';
@@ -8,6 +8,7 @@ import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { useQuery } from '@tanstack/react-query';
 
 export default function AppLayout() {
   const { count } = useCart();
@@ -19,6 +20,14 @@ export default function AppLayout() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const isStaff = user && (user.role === 'admin' || user.role === 'staff');
+
+  // Recent orders shown inside the account dialog (lazy: only fetches when opened).
+  const recentOrdersQuery = useQuery({
+    queryKey: ['recent-orders', user?.id],
+    enabled: !!isAuthenticated && !!user?.id && settingsOpen,
+    queryFn: () => base44.entities.Order.filter({ user_id: user.id }, '-created_date', 3),
+  });
+  const recentOrders = recentOrdersQuery.data || [];
 
   // Track whether in-app navigation history exists so the back button can fall
   // back to a section root on cold deep links (no history to pop).
@@ -59,6 +68,7 @@ export default function AppLayout() {
   ];
   if (isStaff) {
     navItems.push({ to: '/fulfillment', label: 'Fulfill', icon: ClipboardCheck });
+    navItems.push({ to: '/sales', label: 'Sales', icon: BarChart3 });
   }
 
   const isActive = (item) =>
@@ -142,6 +152,29 @@ export default function AppLayout() {
             <p className="text-sm text-muted-foreground">Signed in as</p>
             <p className="font-medium">{user?.full_name || 'Member'}</p>
             <p className="text-sm text-muted-foreground">{user?.email}</p>
+          </div>
+          <div className="space-y-2 pt-3 border-t">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium">Recent Orders</p>
+              <Link to="/orders" onClick={() => setSettingsOpen(false)} className="text-sm text-primary hover:underline">View all</Link>
+            </div>
+            {recentOrdersQuery.isLoading ? (
+              <p className="text-sm text-muted-foreground">Loading…</p>
+            ) : recentOrders.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No orders yet.</p>
+            ) : (
+              <div className="space-y-1">
+                {recentOrders.map(o => (
+                  <Link key={o.id} to={`/orders/${o.id}`} onClick={() => setSettingsOpen(false)} className="flex justify-between items-center rounded-md p-2 hover:bg-accent">
+                    <div>
+                      <p className="text-sm font-medium">{o.order_number}</p>
+                      <p className="text-sm text-muted-foreground">{new Date(o.created_date).toLocaleDateString()}</p>
+                    </div>
+                    <span className="text-sm font-medium">${Number(o.total).toFixed(2)}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
           <DialogFooter className="pt-2">
             <Button variant="destructive" onClick={() => setConfirmOpen(true)}>Delete Account</Button>

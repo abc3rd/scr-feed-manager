@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { cn } from '@/lib/utils';
 import ProductCard from '@/components/ProductCard';
 import LoyaltyBadge from '@/components/LoyaltyBadge';
+import LoyaltyProgress from '@/components/LoyaltyProgress';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 import PullToRefresh from '@/components/PullToRefresh';
 import { RotateCw } from 'lucide-react';
@@ -37,12 +38,15 @@ export default function Shop() {
     <PullToRefresh onRefresh={refresh}>
     <div className="space-y-4">
       {isAuthenticated && user && (
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">Welcome back</p>
-            <p className="font-medium">{user.full_name || user.email}</p>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Welcome back</p>
+              <p className="font-medium">{user.full_name || user.email}</p>
+            </div>
+            <LoyaltyBadge tier={user.loyalty_tier} points={user.loyalty_points} />
           </div>
-          <LoyaltyBadge tier={user.loyalty_tier} points={user.loyalty_points} />
+          <LoyaltyProgress lifetimePoints={user.lifetime_points} tier={user.loyalty_tier} />
         </div>
       )}
 
