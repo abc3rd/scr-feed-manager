@@ -12,7 +12,10 @@
         "check_stock": {
           "call": "invoke_backend_function",
           "with": {
-            "function_name": "low-stock-alert"
+            "function_name": "low-stock-alert",
+            "args": {
+              "scheduler_token": "58d90250-79cb-4ce9-8453-3c7f0869ace5"
+            }
           },
           "then": "end",
           "x-base44": {

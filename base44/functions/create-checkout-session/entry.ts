@@ -146,6 +146,21 @@ export default async function(req) {
     const stripe = new Stripe(secrets.get('STRIPE_SECRET_KEY'));
     const origin = new URL(req.url).origin;
 
+    // Validate client-supplied return URLs are same-origin (or relative) to
+    // prevent open-redirect phishing via attacker-controlled success/cancel URLs.
+    // Anything that doesn't resolve to this app's origin falls back to the default.
+    const safeReturnUrl = (url) => {
+      if (!url || typeof url !== 'string') return null;
+      try {
+        const parsed = new URL(url, origin);
+        return parsed.origin === origin ? parsed.href : null;
+      } catch {
+        return null;
+      }
+    };
+    const safeSuccess = safeReturnUrl(success_url) || `${origin}/order-success?order_id=${order.id}`;
+    const safeCancel = safeReturnUrl(cancel_url) || `${origin}/cart`;
+
     const lineItems = verifiedItems.map(i => ({
       price_data: {
         currency: 'usd',
@@ -159,8 +174,8 @@ export default async function(req) {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: success_url || `${origin}/order-success?order_id=${order.id}`,
-      cancel_url: cancel_url || `${origin}/cart`,
+      success_url: safeSuccess,
+      cancel_url: safeCancel,
       metadata: {
         base44_app_id: Deno.env.get('BASE44_APP_ID'),
         order_id: order.id,

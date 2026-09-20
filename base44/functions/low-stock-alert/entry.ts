@@ -1,18 +1,30 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
+import { secrets } from 'base44:runtime';
 
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
+    const reqBody = await req.json().catch(() => ({}));
 
-    // Block direct invocation by non-staff users. Scheduled workflow runs have
-    // no authenticated user and are allowed to proceed.
+    // Allow (a) an admin/staff session (dashboard/test), or (b) the scheduled
+    // workflow, which passes a scheduler token verified against an app secret.
+    // Direct anonymous HTTP calls have neither and are rejected — the token
+    // lives only in the workflow definition and the secret store, so it cannot
+    // be forged by an external caller.
+    let isStaff = false;
     try {
       const user = await base44.auth.me();
+      if (user && (user.role === 'admin' || user.role === 'staff')) isStaff = true;
       if (user && user.role !== 'admin' && user.role !== 'staff') {
         return Response.json({ error: 'Only staff can trigger stock alerts' }, { status: 403 });
       }
     } catch {
-      // No authenticated user (scheduled run) — continue.
+      // No authenticated user — must be a scheduled run; validate token below.
+    }
+    const expectedToken = secrets.get('LOW_STOCK_ALERT_SCHEDULER_TOKEN');
+    const isScheduled = !!expectedToken && reqBody?.scheduler_token === expectedToken;
+    if (!isStaff && !isScheduled) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Find products at or below their reorder threshold (available = stock - reserved).
