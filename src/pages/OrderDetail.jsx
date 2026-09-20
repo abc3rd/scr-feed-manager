@@ -44,7 +44,7 @@ export default function OrderDetail() {
 
   return (
     <div className="space-y-4">
-      <Link to="/orders" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      <Link to="/orders" className="inline-flex items-center gap-1 min-h-11 px-2 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-4 w-4" /> Orders
       </Link>
 

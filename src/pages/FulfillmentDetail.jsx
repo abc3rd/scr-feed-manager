@@ -80,7 +80,7 @@ export default function FulfillmentDetail() {
 
   return (
     <div className="space-y-4">
-      <button onClick={() => navigate('/fulfillment')} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      <button onClick={() => navigate('/fulfillment')} className="inline-flex items-center gap-1 min-h-11 px-2 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-4 w-4" /> Back to tickets
       </button>
 
@@ -113,6 +113,7 @@ export default function FulfillmentDetail() {
                     min="0"
                     max={item.requested_quantity}
                     value={qty}
+                    aria-label="Verified quantity"
                     onChange={e => setVerified(v => ({ ...v, [item.product_id]: Number(e.target.value) }))}
                     className="w-20 text-right"
                   />

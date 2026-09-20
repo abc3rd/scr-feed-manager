@@ -67,7 +67,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur pt-safe">
         <div className="mx-auto max-w-5xl px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 font-heading font-bold text-lg">
             <span className="text-primary">SCR</span> Feed
@@ -95,7 +95,7 @@ export default function Landing() {
           <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/60 to-background" />
         </div>
         <div className="relative mx-auto max-w-5xl px-4 py-20 sm:py-28 text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full border bg-background/80 px-3 py-1 text-xs font-medium backdrop-blur">
+          <span className="inline-flex items-center gap-1.5 rounded-full border bg-background/80 px-3 py-1 text-sm font-medium backdrop-blur">
             <Bell className="h-3 w-3" /> Fresh stock from the yard, daily
           </span>
           <h1 className="mt-6 font-heading font-bold text-4xl sm:text-6xl tracking-tight">
@@ -113,7 +113,7 @@ export default function Landing() {
               <Link to="/register">Create an account</Link>
             </Button>
           </div>
-          <div className="mt-8 flex items-center justify-center gap-6 text-xs text-muted-foreground">
+          <div className="mt-8 flex items-center justify-center gap-6 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4" /> Secure payments</span>
             <span className="flex items-center gap-1.5"><Truck className="h-4 w-4" /> Verified pickup</span>
             <span className="flex items-center gap-1.5"><Star className="h-4 w-4" /> Loyalty rewards</span>
@@ -184,7 +184,7 @@ export default function Landing() {
               </span>
               <p className="mt-3 font-heading font-bold text-2xl">{t.discount}</p>
               <p className="mt-1 text-sm font-medium">{t.perk}</p>
-              <p className="mt-2 text-xs text-muted-foreground">{t.points} lifetime points</p>
+              <p className="mt-2 text-sm text-muted-foreground">{t.points} lifetime points</p>
             </Card>
           ))}
         </div>

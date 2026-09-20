@@ -1,4 +1,4 @@
-import React, { useState, Suspense } from 'react';
+import React, { useState, useRef, useEffect, Suspense } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingBag, ShoppingCart, Package, ClipboardCheck, LogOut, Settings, ArrowLeft } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
@@ -19,6 +19,24 @@ export default function AppLayout() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const isStaff = user && (user.role === 'admin' || user.role === 'staff');
+
+  // Track whether in-app navigation history exists so the back button can fall
+  // back to a section root on cold deep links (no history to pop).
+  const canGoBackRef = useRef(location.key !== 'default');
+  useEffect(() => {
+    if (location.key !== 'default') canGoBackRef.current = true;
+  }, [location.key]);
+
+  const goBack = () => {
+    if (canGoBackRef.current) {
+      navigate(-1);
+    } else {
+      const fallback = location.pathname.startsWith('/orders') ? '/orders'
+        : location.pathname.startsWith('/fulfillment') ? '/fulfillment'
+        : '/shop';
+      navigate(fallback);
+    }
+  };
 
   const handleDeleteAccount = async () => {
     setDeleting(true);
@@ -53,7 +71,7 @@ export default function AppLayout() {
       <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur pt-safe">
         <div className="mx-auto max-w-2xl flex items-center justify-between px-4 h-14">
           {showBack ? (
-            <button onClick={() => navigate(-1)} className="flex items-center text-muted-foreground hover:text-foreground" aria-label="Go back">
+            <button onClick={goBack} className="flex items-center text-muted-foreground hover:text-foreground" aria-label="Go back">
               <ArrowLeft className="h-5 w-5" />
             </button>
           ) : (

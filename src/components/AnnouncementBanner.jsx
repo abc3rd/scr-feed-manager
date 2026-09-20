@@ -7,7 +7,7 @@ export default function AnnouncementBanner({ announcement }) {
       <Megaphone className="h-4 w-4 mt-0.5 text-primary shrink-0" />
       <div>
         <p className="font-medium text-sm">{announcement.title}</p>
-        <p className="text-xs text-muted-foreground">{announcement.message}</p>
+        <p className="text-sm text-muted-foreground">{announcement.message}</p>
       </div>
     </div>
   );
