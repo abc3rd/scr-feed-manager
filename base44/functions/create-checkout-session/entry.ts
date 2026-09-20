@@ -15,7 +15,7 @@ export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
-    const { items, points_redeemed, notes, success_url, cancel_url } = body;
+    const { items, points_redeemed, notes, success_url, cancel_url, barn_qr_id, fulfillment_type, delivery_address } = body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return Response.json({ error: 'Cart is empty' }, { status: 400 });
@@ -28,7 +28,18 @@ export default async function(req) {
     try {
       user = await base44.auth.me();
     } catch {
-      // No authenticated session — guest checkout, no discount.
+      // No authenticated session — may still be a barn-profile order below.
+    }
+    // Barn Profile quick-order: if no web session, resolve the member by their
+    // barn QR token server-side. The physical sticker is the credential, so the
+    // token is verified here — never trust a client-supplied user_id.
+    if (!user && barn_qr_id) {
+      const members = await base44.asServiceRole.entities.User.filter(
+        { barn_qr_id },
+        '-created_date',
+        1
+      );
+      user = members && members[0] ? members[0] : null;
     }
     const userId = user ? user.id : null;
 
@@ -92,6 +103,8 @@ export default async function(req) {
       user_id: userId,
       status: 'pending',
       payment_status: 'unpaid',
+      fulfillment_type: fulfillment_type === 'delivery' ? 'delivery' : 'pickup',
+      delivery_address: fulfillment_type === 'delivery' ? (delivery_address || null) : null,
       items: verifiedItems,
       subtotal,
       discount_amount: discount,

@@ -56,6 +56,14 @@ export default function OrderDetail() {
         <OrderStatusBadge status={order.status} />
       </div>
 
+      <div className="flex items-center gap-2 text-sm">
+        <span className="text-muted-foreground">Fulfillment:</span>
+        <span className="font-medium capitalize">{order.fulfillment_type || 'pickup'}</span>
+        {order.fulfillment_type === 'delivery' && order.delivery_address && (
+          <span className="text-muted-foreground">· {order.delivery_address}</span>
+        )}
+      </div>
+
       <Card className="p-4 space-y-3">
         <h3 className="font-medium text-sm">Fulfillment Progress</h3>
         <FulfillmentProgress tickets={tickets} />

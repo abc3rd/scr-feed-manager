@@ -31,6 +31,10 @@
     },
     "phone": {
       "type": "string"
+    },
+    "barn_qr_id": {
+      "type": "string",
+      "description": "Unique token encoded in the member's barn QR sticker. Scanning it opens the member's Barn Profile quick-order page."
     }
   },
   "required": [
