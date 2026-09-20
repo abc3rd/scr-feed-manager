@@ -215,6 +215,8 @@ export default function Landing() {
           <p>© {new Date().getFullYear()} SCR Feed Manager. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <Link to="/shop" className="hover:text-foreground">Shop</Link>
+            <Link to="/about" className="hover:text-foreground">About</Link>
+            <Link to="/contact" className="hover:text-foreground">Contact</Link>
             <Link to="/login" className="hover:text-foreground">Sign In</Link>
           </div>
         </div>

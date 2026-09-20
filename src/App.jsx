@@ -13,6 +13,8 @@ import AppLayout from './components/AppLayout';
 import { CartProvider } from './lib/CartContext';
 
 const Landing = lazy(() => import('./pages/Landing'));
+const About = lazy(() => import('./pages/About'));
+const Contact = lazy(() => import('./pages/Contact'));
 const Shop = lazy(() => import('./pages/Shop'));
 const Cart = lazy(() => import('./pages/Cart'));
 const OrderSuccess = lazy(() => import('./pages/OrderSuccess'));
@@ -49,6 +51,8 @@ const AnimatedRoutes = () => {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/" element={<Landing />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
             <Route element={<AppLayout />}>
               <Route path="/shop" element={<Shop />} />
               <Route path="/cart" element={<Cart />} />
