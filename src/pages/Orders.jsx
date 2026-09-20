@@ -9,6 +9,7 @@ import OrderStatusBadge from '@/components/OrderStatusBadge';
 import FulfillmentProgress from '@/components/FulfillmentProgress';
 import { Package, RotateCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import PullToRefresh from '@/components/PullToRefresh';
 
 export default function Orders() {
   const { user, isAuthenticated } = useAuth();
@@ -18,12 +19,14 @@ export default function Orders() {
     queryKey: ['orders', user?.id],
     enabled: !!isAuthenticated && !!user?.id,
     queryFn: async () => {
-      const myOrders = await base44.entities.Order.filter({ user_id: user.id }, '-created_date', 50);
+      const [myOrders, myTickets] = await Promise.all([
+        base44.entities.Order.filter({ user_id: user.id }, '-created_date', 50),
+        base44.entities.PickTicket.filter({ user_id: user.id }, '-created_date', 200),
+      ]);
       const ticketMap = {};
-      await Promise.all(myOrders.map(async (o) => {
-        const tickets = await base44.entities.PickTicket.filter({ order_id: o.id }, '-created_date', 20);
-        ticketMap[o.id] = tickets;
-      }));
+      for (const t of myTickets) {
+        (ticketMap[t.order_id] ||= []).push(t);
+      }
       return { orders: myOrders, ticketsByOrder: ticketMap };
     },
   });
@@ -60,10 +63,11 @@ export default function Orders() {
   }
 
   return (
+    <PullToRefresh onRefresh={refresh}>
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-heading font-bold text-xl">My Orders</h2>
-        <button onClick={refresh} className="text-muted-foreground hover:text-foreground p-1" aria-label="Refresh orders">
+        <button onClick={refresh} className="h-11 w-11 flex items-center justify-center text-muted-foreground hover:text-foreground" aria-label="Refresh orders">
           <RotateCw className={cn('h-4 w-4', refreshing && 'animate-spin')} />
         </button>
       </div>
@@ -75,7 +79,7 @@ export default function Orders() {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="font-medium">{order.order_number}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     {new Date(order.created_date).toLocaleDateString()}
                   </p>
                 </div>
@@ -91,5 +95,6 @@ export default function Orders() {
         );
       })}
     </div>
+    </PullToRefresh>
   );
 }

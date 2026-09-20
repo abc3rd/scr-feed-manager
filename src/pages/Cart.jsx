@@ -91,7 +91,7 @@ export default function Cart() {
           <Card key={item.product_id} className="p-3 flex items-center gap-3">
             <div className="flex-1">
               <p className="font-medium text-sm">{item.name}</p>
-              <p className="text-xs text-muted-foreground">${item.unit_price.toFixed(2)} / {item.unit_of_measure}</p>
+              <p className="text-sm text-muted-foreground">${item.unit_price.toFixed(2)} / {item.unit_of_measure}</p>
             </div>
             <div className="flex items-center gap-1">
               <Button size="icon" variant="outline" className="h-11 w-11" onClick={() => updateQuantity(item.product_id, item.quantity - 1)}>
@@ -105,7 +105,7 @@ export default function Cart() {
             <div className="text-right w-16">
               <p className="font-medium text-sm">${(item.unit_price * item.quantity).toFixed(2)}</p>
             </div>
-            <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground" onClick={() => removeItem(item.product_id)}>
+            <Button size="icon" variant="ghost" className="h-11 w-11 text-muted-foreground" onClick={() => removeItem(item.product_id)}>
               <Trash2 className="h-4 w-4" />
             </Button>
           </Card>
@@ -118,7 +118,7 @@ export default function Cart() {
           <span>${subtotal.toFixed(2)}</span>
         </div>
         {discountAmount > 0 && (
-          <div className="flex justify-between text-sm text-green-600">
+          <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
             <span className="capitalize">{tier} discount ({discountRate * 100}%)</span>
             <span>−${discountAmount.toFixed(2)}</span>
           </div>
@@ -130,7 +130,7 @@ export default function Cart() {
       </Card>
 
       {!isAuthenticated && (
-        <p className="text-xs text-muted-foreground text-center">
+        <p className="text-sm text-muted-foreground text-center">
           <button onClick={() => navigate('/login')} className="text-primary underline">Sign in</button> to earn loyalty points on this order.
         </p>
       )}

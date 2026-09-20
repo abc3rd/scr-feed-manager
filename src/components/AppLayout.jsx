@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingBag, ShoppingCart, Package, ClipboardCheck, LogOut, Settings, ArrowLeft } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
@@ -67,10 +67,10 @@ export default function AppLayout() {
             )}
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
-                <button onClick={() => setSettingsOpen(true)} className="text-muted-foreground hover:text-foreground" aria-label="Settings">
+                <button onClick={() => setSettingsOpen(true)} className="h-11 w-11 flex items-center justify-center text-muted-foreground hover:text-foreground" aria-label="Settings">
                   <Settings className="h-4 w-4" />
                 </button>
-                <button onClick={() => logout()} className="text-muted-foreground hover:text-foreground" aria-label="Sign out">
+                <button onClick={() => logout()} className="h-11 w-11 flex items-center justify-center text-muted-foreground hover:text-foreground" aria-label="Sign out">
                   <LogOut className="h-4 w-4" />
                 </button>
               </div>
@@ -82,7 +82,9 @@ export default function AppLayout() {
       </header>
 
       <main className="flex-1 mx-auto w-full max-w-2xl px-4 py-4 pb-24">
-        <Outlet />
+        <Suspense fallback={<div className="flex items-center justify-center py-20"><div className="w-7 h-7 border-4 border-muted border-t-primary rounded-full animate-spin" /></div>}>
+          <Outlet />
+        </Suspense>
       </main>
 
       <nav className="fixed bottom-0 inset-x-0 z-30 border-t bg-background/95 backdrop-blur pb-safe">
@@ -95,14 +97,14 @@ export default function AppLayout() {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  'relative flex flex-col items-center justify-center gap-0.5 flex-1 text-xs',
+                  'relative flex flex-col items-center justify-center gap-0.5 flex-1 text-sm',
                   active ? 'text-primary' : 'text-muted-foreground'
                 )}
               >
                 <Icon className="h-5 w-5" />
                 <span>{item.label}</span>
                 {item.badge > 0 && (
-                  <span className="absolute top-1 right-1/3 bg-primary text-primary-foreground text-[10px] rounded-full h-4 min-w-4 px-1 flex items-center justify-center">
+                  <span className="absolute top-1 right-1/3 bg-primary text-primary-foreground text-sm rounded-full h-5 min-w-5 px-1.5 flex items-center justify-center">
                     {item.badge}
                   </span>
                 )}

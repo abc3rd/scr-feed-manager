@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import ProductCard from '@/components/ProductCard';
 import LoyaltyBadge from '@/components/LoyaltyBadge';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
+import PullToRefresh from '@/components/PullToRefresh';
 import { RotateCw } from 'lucide-react';
 
 const CATEGORIES = ['all', 'hay', 'feed', 'grain', 'supplements', 'bedding', 'equipment'];
@@ -33,6 +34,7 @@ export default function Shop() {
   const filtered = category === 'all' ? products : products.filter(p => p.category === category);
 
   return (
+    <PullToRefresh onRefresh={refresh}>
     <div className="space-y-4">
       {isAuthenticated && user && (
         <div className="flex items-center justify-between">
@@ -55,7 +57,7 @@ export default function Shop() {
           <h2 className="font-heading font-bold text-xl mb-1">Feed &amp; Supplies</h2>
           <p className="text-sm text-muted-foreground">Fresh stock from the yard. Browse below or scan a QR code in the barn.</p>
         </div>
-        <button onClick={refresh} className="text-muted-foreground hover:text-foreground p-1" aria-label="Refresh products">
+        <button onClick={refresh} className="h-11 w-11 flex items-center justify-center text-muted-foreground hover:text-foreground" aria-label="Refresh products">
           <RotateCw className={cn('h-4 w-4', refreshing && 'animate-spin')} />
         </button>
       </div>
@@ -66,7 +68,7 @@ export default function Shop() {
             key={c}
             onClick={() => setCategory(c)}
             className={cn(
-              'px-3 py-1.5 rounded-full text-sm whitespace-nowrap capitalize border',
+              'px-3 py-2 min-h-11 rounded-full text-sm whitespace-nowrap capitalize border',
               category === c
                 ? 'bg-primary text-primary-foreground border-primary'
                 : 'bg-background border-border text-muted-foreground'
@@ -91,5 +93,6 @@ export default function Shop() {
         </div>
       )}
     </div>
+    </PullToRefresh>
   );
 }

@@ -57,10 +57,10 @@ const TIERS = [
 ];
 
 const TIER_STYLES = {
-  Bronze: 'border-amber-200 bg-amber-50 text-amber-800',
-  Silver: 'border-slate-200 bg-slate-50 text-slate-700',
-  Gold: 'border-yellow-200 bg-yellow-50 text-yellow-800',
-  Platinum: 'border-indigo-200 bg-indigo-50 text-indigo-800',
+  Bronze: 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300',
+  Silver: 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-600 dark:bg-slate-800/60 dark:text-slate-200',
+  Gold: 'border-yellow-200 bg-yellow-50 text-yellow-800 dark:border-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-300',
+  Platinum: 'border-indigo-200 bg-indigo-50 text-indigo-800 dark:border-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300',
 };
 
 export default function Landing() {
@@ -179,7 +179,7 @@ export default function Landing() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {TIERS.map(t => (
             <Card key={t.name} className="p-5 text-center">
-              <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium ${TIER_STYLES[t.name]}`}>
+              <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium ${TIER_STYLES[t.name]}`}>
                 <Star className="h-3 w-3 fill-current" /> {t.name}
               </span>
               <p className="mt-3 font-heading font-bold text-2xl">{t.discount}</p>

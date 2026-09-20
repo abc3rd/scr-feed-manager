@@ -9,10 +9,10 @@ import FulfillmentProgress from '@/components/FulfillmentProgress';
 import { ArrowLeft, Ticket } from 'lucide-react';
 
 const TICKET_STATUS_STYLES = {
-  open: 'bg-amber-100 text-amber-800',
-  in_progress: 'bg-blue-100 text-blue-800',
-  done: 'bg-green-100 text-green-800',
-  cancelled: 'bg-red-100 text-red-800',
+  open: 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300',
+  in_progress: 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300',
+  done: 'bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-300',
+  cancelled: 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300',
 };
 
 export default function OrderDetail() {
@@ -51,7 +51,7 @@ export default function OrderDetail() {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="font-heading font-bold text-xl">{order.order_number}</h1>
-          <p className="text-xs text-muted-foreground">{new Date(order.created_date).toLocaleString()}</p>
+          <p className="text-sm text-muted-foreground">{new Date(order.created_date).toLocaleString()}</p>
         </div>
         <OrderStatusBadge status={order.status} />
       </div>
@@ -59,7 +59,7 @@ export default function OrderDetail() {
       <Card className="p-4 space-y-3">
         <h3 className="font-medium text-sm">Fulfillment Progress</h3>
         <FulfillmentProgress tickets={tickets} />
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           {tickets.length} pick ticket(s) · {tickets.filter(t => t.status === 'done').length} completed
         </p>
       </Card>
@@ -97,13 +97,13 @@ export default function OrderDetail() {
           <Card key={ticket.id} className="p-4 space-y-2">
             <div className="flex justify-between items-center">
               <span className="font-medium text-sm">{ticket.ticket_number}</span>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${TICKET_STATUS_STYLES[ticket.status] || ''}`}>
+              <span className={`text-sm px-2 py-0.5 rounded-full font-medium capitalize ${TICKET_STATUS_STYLES[ticket.status] || ''}`}>
                 {ticket.status.replace('_', ' ')}
               </span>
             </div>
             <div className="space-y-1">
               {ticket.pick_items?.map((item, i) => (
-                <div key={i} className="flex justify-between text-xs">
+                <div key={i} className="flex justify-between text-sm">
                   <span className="text-muted-foreground">{item.name}</span>
                   <span>
                     {Number(item.verified_quantity || 0)} / {item.requested_quantity} {item.unit_of_measure}
@@ -112,7 +112,7 @@ export default function OrderDetail() {
               ))}
             </div>
             {ticket.verified_at && (
-              <p className="text-xs text-muted-foreground pt-1">
+              <p className="text-sm text-muted-foreground pt-1">
                 Verified {new Date(ticket.verified_at).toLocaleString()}
               </p>
             )}
