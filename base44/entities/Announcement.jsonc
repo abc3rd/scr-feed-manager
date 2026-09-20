@@ -8,6 +8,11 @@
     "message": {
       "type": "string"
     },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional longer-form details shown alongside the announcement."
+    },
     "type": {
       "type": "string",
       "enum": [
@@ -34,50 +39,5 @@
     "title",
     "message",
     "type"
-  ],
-  "rls": {
-    "create": {
-      "$or": [
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "staff"
-          }
-        }
-      ]
-    },
-    "read": null,
-    "update": {
-      "$or": [
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "staff"
-          }
-        }
-      ]
-    },
-    "delete": {
-      "$or": [
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "staff"
-          }
-        }
-      ]
-    }
-  }
+  ]
 }
