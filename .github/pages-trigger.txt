@@ -1,1 +1,0 @@
-GitHub Pages deployment trigger. Public repository confirmed on 2026-09-24.
