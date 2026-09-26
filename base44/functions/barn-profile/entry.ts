@@ -117,9 +117,7 @@ export default async function (req) {
 
     return Response.json({
       member: {
-        id: member.id,
         full_name: member.full_name,
-        email: member.email,
         loyalty_tier: member.loyalty_tier || 'bronze',
         loyalty_points: member.loyalty_points || 0,
       },
