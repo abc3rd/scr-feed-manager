@@ -62,6 +62,15 @@ export default async function(req) {
     }
 
     // Build verified line items: quantity from client, price from DB.
+    // Bound quantities against available stock so an anonymous caller cannot
+    // reserve the entire catalog (reservation DoS). Per-line and per-order caps
+    // also limit record/reservation bloat from unauthenticated guests.
+    const MAX_LINE_QTY = 999;
+    const MAX_ORDER_LINES = 100;
+    if (items.length > MAX_ORDER_LINES) {
+      return Response.json({ error: 'Too many items in cart' }, { status: 400 });
+    }
+    const consumed = new Map(); // product_id -> qty already counted in this order
     const verifiedItems = [];
     for (const i of items) {
       const product = productMap.get(i.product_id);
@@ -69,6 +78,15 @@ export default async function(req) {
       if (quantity <= 0) {
         return Response.json({ error: `Invalid quantity for ${product.name}` }, { status: 400 });
       }
+      if (quantity > MAX_LINE_QTY) {
+        return Response.json({ error: `Quantity too large for ${product.name} (max ${MAX_LINE_QTY})` }, { status: 400 });
+      }
+      const soFar = consumed.get(i.product_id) || 0;
+      const available = Number(product.stock_quantity || 0) - Number(product.reserved_quantity || 0) - soFar;
+      if (quantity > available) {
+        return Response.json({ error: `Only ${Math.max(0, available)} ${product.unit_of_measure} of ${product.name} available` }, { status: 400 });
+      }
+      consumed.set(i.product_id, soFar + quantity);
       const unitPrice = Number(product.price);
       const lineTotal = +(unitPrice * quantity).toFixed(2);
       verifiedItems.push({

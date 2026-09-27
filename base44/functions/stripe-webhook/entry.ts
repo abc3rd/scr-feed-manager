@@ -33,7 +33,17 @@ export default async function(req) {
       const orderId = session.metadata?.order_id;
       if (orderId) {
         const order = await base44.asServiceRole.entities.Order.get(orderId);
-        if (order && order.payment_status === 'unpaid') {
+        // Only cancel still-pending unpaid orders — the status guard also
+        // prevents double-decrementing reservations on a retried webhook.
+        if (order && order.payment_status === 'unpaid' && order.status === 'pending') {
+          for (const i of (order.items || [])) {
+            const product = await base44.asServiceRole.entities.Product.get(i.product_id);
+            if (product) {
+              await base44.asServiceRole.entities.Product.update(i.product_id, {
+                reserved_quantity: Math.max(0, Number(product.reserved_quantity || 0) - Number(i.quantity || 0))
+              });
+            }
+          }
           await base44.asServiceRole.entities.Order.update(orderId, { status: 'cancelled' });
         }
       }

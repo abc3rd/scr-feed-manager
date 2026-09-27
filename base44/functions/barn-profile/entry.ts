@@ -119,7 +119,6 @@ export default async function (req) {
       member: {
         full_name: member.full_name,
         loyalty_tier: member.loyalty_tier || 'bronze',
-        loyalty_points: member.loyalty_points || 0,
       },
       items: formItems,
       promos: promos.map((a) => ({

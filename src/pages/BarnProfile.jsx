@@ -147,7 +147,7 @@ export default function BarnProfile() {
           <h1 className="font-heading font-bold text-xl mt-0.5">
             Welcome back{member?.full_name ? `, ${member.full_name.split(' ')[0]}` : ''}
           </h1>
-          <p className="text-sm text-muted-foreground capitalize">{member?.loyalty_tier} member · {member?.loyalty_points || 0} pts</p>
+          <p className="text-sm text-muted-foreground capitalize">{member?.loyalty_tier} member</p>
         </div>
       </header>
 
