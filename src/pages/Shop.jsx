@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
@@ -39,6 +40,9 @@ export default function Shop() {
   const refresh = () => Promise.all([productsQuery.refetch(), announcementsQuery.refetch(), trendingQuery.refetch()]);
 
   const filtered = category === 'all' ? products : products.filter(p => p.category === category);
+  const catalogError = /** @type {{ status?: number, response?: { status?: number } } | null} */ (productsQuery.error);
+  const status = catalogError?.status || catalogError?.response?.status;
+  const signInRequired = status === 401 || status === 403;
 
   return (
     <PullToRefresh onRefresh={refresh}>
@@ -91,7 +95,16 @@ export default function Shop() {
         ))}
       </div>
 
-      {loading ? (
+      {productsQuery.isError ? (
+        <div role="alert" className="rounded-lg border border-border p-6 text-center space-y-3">
+          <p>{signInRequired ? 'Sign in to view the product catalog.' : 'Products could not be loaded. Please try again.'}</p>
+          {signInRequired ? (
+            <Link to="/login?returnTo=%2Fshop" className="inline-block rounded-lg bg-primary px-4 py-3 text-primary-foreground">Sign in</Link>
+          ) : (
+            <button onClick={refresh} className="rounded-lg bg-primary px-4 py-3 text-primary-foreground">Try again</button>
+          )}
+        </div>
+      ) : loading ? (
         <div className="grid grid-cols-2 gap-3">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="aspect-[3/4] rounded-lg bg-muted animate-pulse" />

@@ -25,10 +25,14 @@ jobs:
         uses: actions/checkout@v4
       - name: Configure Pages
         uses: actions/configure-pages@v5
+      - name: Prepare the standalone landing page
+        run: |
+          mkdir -p _pages
+          cp public/proposal.html _pages/index.html
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _pages
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4

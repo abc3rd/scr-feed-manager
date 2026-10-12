@@ -1,5 +1,23 @@
 # Base44 Project
 
+## Railway deployment
+
+The Railway service builds the React frontend using `Dockerfile` and serves
+`dist` through Caddy. Application routes fall back to the React entry page;
+`/api/*` is forwarded to Base44 without adding service-role credentials.
+
+Configure `VITE_BASE44_APP_ID` with the editor app ID,
+`VITE_BASE44_APP_BASE_URL=https://app.base44.com`, and `PORT=8080` in Railway.
+The public configuration is supplied to the Docker build. Use `/healthz` for
+the Railway healthcheck and route the public domain to port 8080.
+
+Base44 continues to enforce authentication and entity access rules. The
+frontend deployment does not deploy the `base44/functions` resources or
+configure payment, Shopify, QuickBooks, or HighLevel credentials.
+
+The former standalone proposal page is preserved at `/proposal.html` and is
+also the page published by the existing GitHub Pages workflow.
+
 Use this repository to run and edit the app locally, then publish changes back through Base44.
 
 Any change pushed to the repo will also be reflected in the Base44 Builder.

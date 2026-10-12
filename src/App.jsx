@@ -75,7 +75,7 @@ const AnimatedRoutes = () => {
 };
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, checkAppState } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -91,6 +91,14 @@ const AuthenticatedApp = () => {
     } else if (authError.type === 'auth_required') {
       navigateToLogin();
       return null;
+    } else {
+      return (
+        <div role="alert" className="min-h-screen flex flex-col items-center justify-center gap-4 p-6 text-center">
+          <h1 className="text-xl font-bold">Unable to connect to the store</h1>
+          <p>Please try again. If this continues, contact the store for assistance.</p>
+          <button className="rounded-lg bg-primary px-4 py-3 text-primary-foreground" onClick={checkAppState}>Try again</button>
+        </div>
+      );
     }
   }
 
