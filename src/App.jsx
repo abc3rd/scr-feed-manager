@@ -9,6 +9,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
+import RouteAnalytics from './components/RouteAnalytics';
 import AppLayout from './components/AppLayout';
 import { CartProvider } from './lib/CartContext';
 
@@ -115,6 +116,7 @@ function App() {
         <CartProvider>
         <Router>
           <ScrollToTop />
+          <RouteAnalytics />
           <AuthenticatedApp />
         </Router>
         </CartProvider>

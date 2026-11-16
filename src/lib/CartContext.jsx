@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { track } from '@/lib/analytics';
 
 const CartContext = createContext();
 const STORAGE_KEY = 'scr_feed_cart';
@@ -18,6 +19,14 @@ export const CartProvider = ({ children }) => {
   }, [items]);
 
   const addItem = (product, quantity = 1) => {
+    track('add_to_cart', {
+      item_id: product.id,
+      item_name: product.name,
+      price: product.price,
+      quantity,
+      value: (product.price || 0) * quantity,
+      currency: 'USD',
+    });
     setItems(prev => {
       const existing = prev.find(i => i.product_id === product.id);
       if (existing) {
