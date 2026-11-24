@@ -132,7 +132,7 @@ export default async function (req) {
       member: authenticated
         ? {
             full_name: member.full_name,
-            loyalty_tier: member.loyalty_tier || 'bronze',
+            membership: member.membership === 'paid' ? 'paid' : 'free',
           }
         : null,
       items: formItems,

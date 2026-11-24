@@ -15,7 +15,17 @@
       "type": "number",
       "default": 0
     },
+    "membership": {
+      "type": "string",
+      "enum": [
+        "free",
+        "paid"
+      ],
+      "default": "free",
+      "description": "Stars Club membership. Paid Members get perks such as priority delivery. Stars never discount a sale (ADR 0001, syncloudconnect-main)."
+    },
     "loyalty_tier": {
+      "description": "Deprecated: tiers were removed (ADR 0001). Kept only so existing records stay readable; no longer written.",
       "type": "string",
       "enum": [
         "bronze",
