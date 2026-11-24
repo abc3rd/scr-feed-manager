@@ -18,6 +18,8 @@ export const CartProvider = ({ children }) => {
   }, [items]);
 
   const addItem = (product, quantity = 1) => {
+    // Never let a product without a real price into the cart (it would sell at $0).
+    if (!(Number(product.price) > 0)) return;
     setItems(prev => {
       const existing = prev.find(i => i.product_id === product.id);
       if (existing) {

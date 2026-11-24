@@ -73,6 +73,19 @@ export default async function(req) {
       productMap.set(i.product_id, product);
     }
 
+    // A product without a real price must never sell at $0. Flag it so staff
+    // set the price at the next sale or restock.
+    const needsPrice = [...productMap.values()]
+      .filter((p) => !(Number(p.price) > 0))
+      .map((p) => p.id);
+    if (needsPrice.length > 0) {
+      const names = needsPrice.map((id) => productMap.get(id).name).join(', ');
+      return Response.json(
+        { error: `Needs a price before it can be sold: ${names}. Please ask SCR staff.`, needs_price: needsPrice },
+        { status: 400 }
+      );
+    }
+
     // Build verified line items: quantity from client, price from DB.
     // Bound quantities against available stock so an anonymous caller cannot
     // reserve the entire catalog (reservation DoS). Per-line and per-order caps

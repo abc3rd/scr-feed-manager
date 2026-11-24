@@ -9,6 +9,7 @@ export default function ProductCard({ product }) {
   const { addItem } = useCart();
   const available = Number(product.stock_quantity || 0) - Number(product.reserved_quantity || 0);
   const outOfStock = available <= 0;
+  const needsPrice = !(Number(product.price) > 0);
 
   return (
     <Card className="overflow-hidden flex flex-col">
@@ -25,8 +26,12 @@ export default function ProductCard({ product }) {
         <h3 className="font-medium text-sm leading-tight">{product.name}</h3>
         <p className="text-sm text-muted-foreground capitalize">{product.category} · per {product.unit_of_measure}</p>
         <div className="mt-auto flex items-center justify-between pt-2">
-          <span className="font-heading font-bold">${Number(product.price).toFixed(2)}</span>
-          <Button size="sm" className="h-11" disabled={outOfStock} onClick={() => addItem(product)}>
+          {needsPrice ? (
+            <span className="text-sm text-muted-foreground">Price coming soon</span>
+          ) : (
+            <span className="font-heading font-bold">${Number(product.price).toFixed(2)}</span>
+          )}
+          <Button size="sm" className="h-11" disabled={outOfStock || needsPrice} onClick={() => addItem(product)}>
             {outOfStock ? <span className="text-xs">Sold out</span> : <Plus className="h-4 w-4" />}
           </Button>
         </div>
