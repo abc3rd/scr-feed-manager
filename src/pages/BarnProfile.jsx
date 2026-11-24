@@ -38,6 +38,7 @@ export default function BarnProfile() {
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [placing, setPlacing] = useState(false);
 
+  const authenticated = profileQuery.data?.authenticated;
   const member = profileQuery.data?.member;
   const items = profileQuery.data?.items || [];
   const promos = profileQuery.data?.promos || [];
@@ -107,6 +108,11 @@ export default function BarnProfile() {
         cancel_url: `${window.location.origin}/barn/${token}`,
       });
       const data = res.data;
+      if (data?.requires_auth) {
+        navigate(`/login?returnTo=${encodeURIComponent(`/barn/${token}`)}`);
+        setPlacing(false);
+        return;
+      }
       if (data?.url) {
         window.location.href = data.url;
       } else {
@@ -145,9 +151,13 @@ export default function BarnProfile() {
         <div className="mx-auto max-w-2xl px-4 py-3">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">SCR Stars Club · Barn Profile</p>
           <h1 className="font-heading font-bold text-xl mt-0.5">
-            Welcome back{member?.full_name ? `, ${member.full_name.split(' ')[0]}` : ''}
+            {authenticated
+              ? `Welcome back, ${member?.full_name?.split(' ')[0] || ''}`
+              : 'SCR Stars Club'}
           </h1>
-          <p className="text-sm text-muted-foreground capitalize">{member?.loyalty_tier} member</p>
+          <p className="text-sm text-muted-foreground capitalize">
+            {authenticated ? `${member?.loyalty_tier} member` : 'Barn quick-order'}
+          </p>
         </div>
       </header>
 
@@ -164,6 +174,18 @@ export default function BarnProfile() {
               </Card>
             ))}
           </div>
+        )}
+
+        {!authenticated && (
+          <Card className="p-4 border-primary/30 bg-primary/5">
+            <p className="text-sm font-medium">Sign in to your Stars Club account</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Your loyalty tier, usual orders, and member checkout are only available once you're signed in.
+            </p>
+            <Button className="h-11 w-full mt-3" onClick={() => navigate(`/login?returnTo=${encodeURIComponent(`/barn/${token}`)}`)}>
+              Sign in
+            </Button>
+          </Card>
         )}
 
         <div>
@@ -245,27 +267,38 @@ export default function BarnProfile() {
 
       <div className="fixed bottom-0 inset-x-0 z-30 border-t bg-background/95 backdrop-blur pb-safe">
         <div className="mx-auto max-w-2xl px-4 py-3 space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">{itemCount} item{itemCount === 1 ? '' : 's'} selected</span>
-            <span className="font-heading font-bold">Est. ${estimatedTotal.toFixed(2)}</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
+          {authenticated ? (
+            <>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{itemCount} item{itemCount === 1 ? '' : 's'} selected</span>
+                <span className="font-heading font-bold">Est. ${estimatedTotal.toFixed(2)}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  className="h-11"
+                  disabled={placing || itemCount === 0}
+                  onClick={() => { setFulfillmentType('pickup'); handlePlaceOrder('pickup'); }}
+                >
+                  <Store className="h-4 w-4" /> Pickup
+                </Button>
+                <Button
+                  className="h-11"
+                  disabled={placing || itemCount === 0}
+                  onClick={() => { setFulfillmentType('delivery'); handlePlaceOrder('delivery'); }}
+                >
+                  {placing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Truck className="h-4 w-4" />} Delivery
+                </Button>
+              </div>
+            </>
+          ) : (
             <Button
-              variant="outline"
-              className="h-11"
-              disabled={placing || itemCount === 0}
-              onClick={() => { setFulfillmentType('pickup'); handlePlaceOrder('pickup'); }}
+              className="h-11 w-full"
+              onClick={() => navigate(`/login?returnTo=${encodeURIComponent(`/barn/${token}`)}`)}
             >
-              <Store className="h-4 w-4" /> Pickup
+              Sign in to order
             </Button>
-            <Button
-              className="h-11"
-              disabled={placing || itemCount === 0}
-              onClick={() => { setFulfillmentType('delivery'); handlePlaceOrder('delivery'); }}
-            >
-              {placing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Truck className="h-4 w-4" />} Delivery
-            </Button>
-          </div>
+          )}
         </div>
       </div>
     </div>

@@ -30,16 +30,28 @@ export default async function(req) {
     } catch {
       // No authenticated session — may still be a barn-profile order below.
     }
-    // Barn Profile quick-order: if no web session, resolve the member by their
-    // barn QR token server-side. The physical sticker is the credential, so the
-    // token is verified here — never trust a client-supplied user_id.
-    if (!user && barn_qr_id) {
+    // Barn Profile quick-order: a barn QR token identifies a member, but the
+    // token alone (a physical sticker anyone near the barn can scan or
+    // photograph) is not enough to act on the member's account. Require an
+    // authenticated session that matches the barn's member before attributing
+    // the order or applying their loyalty tier.
+    if (barn_qr_id) {
       const members = await base44.asServiceRole.entities.User.filter(
         { barn_qr_id },
         '-created_date',
         1
       );
-      user = members && members[0] ? members[0] : null;
+      const barnMember = members && members[0] ? members[0] : null;
+      if (!barnMember) {
+        return Response.json({ error: 'Invalid or unassigned barn code' }, { status: 404 });
+      }
+      if (!user || user.id !== barnMember.id) {
+        return Response.json(
+          { error: 'Sign in to your Stars Club account to order from your barn profile.', requires_auth: true },
+          { status: 401 }
+        );
+      }
+      user = barnMember;
     }
     const userId = user ? user.id : null;
 

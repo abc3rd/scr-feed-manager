@@ -29,25 +29,35 @@ export default async function (req) {
       return Response.json({ error: 'Invalid or unassigned barn code' }, { status: 404 });
     }
 
-    // Aggregate this member's most-ordered items from their past orders.
-    const memberOrders = await base44.asServiceRole.entities.Order.filter(
-      { user_id: member.id },
-      '-created_date',
-      200
-    );
+    // Loyalty and order history are private to the member. Reveal them only
+    // when the caller is signed in as THIS barn's member — not to anyone who
+    // merely holds or photographs the physical QR sticker.
+    let me = null;
+    try { me = await base44.auth.me(); } catch { /* no session */ }
+    const authenticated = !!(me && me.id === member.id);
+
+    // Aggregate this member's most-ordered items from their past orders — this
+    // is purchase history, so it is computed only for the authenticated member.
     const mostOrderedAgg = {};
-    for (const o of memberOrders) {
-      for (const it of (o.items || [])) {
-        if (!it.product_id) continue;
-        const entry = (mostOrderedAgg[it.product_id] ||= {
-          product_id: it.product_id,
-          name: it.name,
-          unit_of_measure: it.unit_of_measure,
-          units: 0,
-          last_price: it.unit_price,
-        });
-        entry.units += Number(it.quantity || 0);
-        entry.last_price = it.unit_price;
+    if (authenticated) {
+      const memberOrders = await base44.asServiceRole.entities.Order.filter(
+        { user_id: member.id },
+        '-created_date',
+        200
+      );
+      for (const o of memberOrders) {
+        for (const it of (o.items || [])) {
+          if (!it.product_id) continue;
+          const entry = (mostOrderedAgg[it.product_id] ||= {
+            product_id: it.product_id,
+            name: it.name,
+            unit_of_measure: it.unit_of_measure,
+            units: 0,
+            last_price: it.unit_price,
+          });
+          entry.units += Number(it.quantity || 0);
+          entry.last_price = it.unit_price;
+        }
       }
     }
     const mostOrderedIds = Object.values(mostOrderedAgg)
@@ -107,8 +117,10 @@ export default async function (req) {
         tags: tag,
       });
     };
-    for (const id of mostOrderedIds) {
-      addProduct(productById.get(id), 'most-ordered');
+    if (authenticated) {
+      for (const id of mostOrderedIds) {
+        addProduct(productById.get(id), 'most-ordered');
+      }
     }
     for (const p of hay) addProduct(p, 'hay');
     for (const id of popularIds) {
@@ -116,10 +128,13 @@ export default async function (req) {
     }
 
     return Response.json({
-      member: {
-        full_name: member.full_name,
-        loyalty_tier: member.loyalty_tier || 'bronze',
-      },
+      authenticated,
+      member: authenticated
+        ? {
+            full_name: member.full_name,
+            loyalty_tier: member.loyalty_tier || 'bronze',
+          }
+        : null,
       items: formItems,
       promos: promos.map((a) => ({
         title: a.title,
