@@ -49,3 +49,7 @@ If the concept you need isn't in the glossary yet, that's a signal: either you'r
 If your output contradicts an existing ADR, surface it explicitly rather than silently overriding:
 
 > _Contradicts ADR-0007 (event-sourced orders), but worth reopening because…_
+
+## Platform vocabulary
+
+Platform-wide terms (Client, Location, Customer, Member, Stars Club, QRAPID, UCP, Optiq, B.R.A.D.Y., Agents, TYRQ) are defined in [`syncloudconnect-main/CONTEXT.md`](https://github.com/abc3rd/syncloudconnect-main/blob/main/CONTEXT.md), with platform decisions in its [`docs/adr/`](https://github.com/abc3rd/syncloudconnect-main/tree/main/docs/adr). Read it before exploring. This repo's own `CONTEXT.md` holds only terms used here alone, and must not redefine a platform term.
