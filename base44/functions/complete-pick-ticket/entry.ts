@@ -1,16 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
-// Tier thresholds based on lifetime points
-const TIER_THRESHOLDS = [
-  { tier: 'platinum', min: 2000 },
-  { tier: 'gold', min: 1000 },
-  { tier: 'silver', min: 500 },
-  { tier: 'bronze', min: 0 }
-];
-
-function tierFor(lifetimePoints) {
-  return TIER_THRESHOLDS.find(t => lifetimePoints >= t.min).tier;
-}
 
 export default async function(req) {
   try {
@@ -114,17 +103,15 @@ export default async function(req) {
           points_earned: pointsEarned
         });
 
-        // STEP 4 — Credit SCR Stars Club loyalty points + recompute tier
+        // STEP 4 — Credit the Member's Stars (one per dollar). No tiers: ADR 0001.
         if (order.user_id && pointsEarned > 0) {
           const customer = await base44.asServiceRole.entities.User.get(order.user_id);
           if (customer) {
             const newPoints = Number(customer.loyalty_points || 0) + pointsEarned;
             const newLifetime = Number(customer.lifetime_points || 0) + pointsEarned;
-            const newTier = tierFor(newLifetime);
             await base44.asServiceRole.entities.User.update(order.user_id, {
               loyalty_points: newPoints,
-              lifetime_points: newLifetime,
-              loyalty_tier: newTier
+              lifetime_points: newLifetime
             });
           }
         }

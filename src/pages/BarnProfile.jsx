@@ -155,8 +155,8 @@ export default function BarnProfile() {
               ? `Welcome back, ${member?.full_name?.split(' ')[0] || ''}`
               : 'SCR Stars Club'}
           </h1>
-          <p className="text-sm text-muted-foreground capitalize">
-            {authenticated ? `${member?.loyalty_tier} member` : 'Barn quick-order'}
+          <p className="text-sm text-muted-foreground">
+            {authenticated ? (member?.membership === 'paid' ? 'Paid Member' : 'Free Member') : 'Barn quick-order'}
           </p>
         </div>
       </header>
@@ -180,7 +180,7 @@ export default function BarnProfile() {
           <Card className="p-4 border-primary/30 bg-primary/5">
             <p className="text-sm font-medium">Sign in to your Stars Club account</p>
             <p className="text-sm text-muted-foreground mt-1">
-              Your loyalty tier, usual orders, and member checkout are only available once you're signed in.
+              Your Stars, usual orders, and member checkout are only available once you're signed in.
             </p>
             <Button className="h-11 w-full mt-3" onClick={() => navigate(`/login?returnTo=${encodeURIComponent(`/barn/${token}`)}`)}>
               Sign in

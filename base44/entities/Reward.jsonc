@@ -15,7 +15,7 @@
     "discount_percent": {
       "type": "number",
       "default": 0,
-      "description": "Percentage discount applied at checkout when reward is redeemed."
+      "description": "Deprecated: Stars never discount a sale (ADR 0001). Not applied at checkout."
     },
     "tier_required": {
       "type": "string",

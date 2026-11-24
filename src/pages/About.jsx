@@ -37,7 +37,7 @@ export default function About() {
             deducted. That means inventory always reflects what is actually on the shelf, customers are
             never charged for product that is not there, and fulfillment progress is visible in real time.
             In-barn QR scanning lets staff jump straight to a product, and the SCR Stars Club rewards
-            repeat buyers with tier-based discounts that grow with every dollar spent.
+            repeat buyers with a Star for every dollar spent, plus priority delivery for Paid Members.
           </p>
           <p>
             The app is designed for the people who keep a barn running — the barn manager ordering a week of

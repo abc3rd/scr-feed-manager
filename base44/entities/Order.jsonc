@@ -104,7 +104,7 @@
         "string",
         "null"
       ],
-      "description": "Loyalty tier used to compute the discount at checkout."
+      "description": "Deprecated: tier discounts were removed (ADR 0001). Always null on new orders."
     },
     "points_earned": {
       "type": "number",

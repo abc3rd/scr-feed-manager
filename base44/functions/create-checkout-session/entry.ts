@@ -2,14 +2,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import Stripe from 'npm:stripe@17.3.1';
 import { secrets } from 'base44:runtime';
 
-// Server-side loyalty tier discounts — must mirror src/lib/loyalty.js.
-// Pricing is never trusted from the client; this is the authoritative source.
-const TIER_DISCOUNTS = {
-  bronze: 0,
-  silver: 0.05,
-  gold: 0.10,
-  platinum: 0.15,
-};
+// Pricing is never trusted from the client; prices come from the database.
+// Stars never reduce the price of a sale (ADR 0001, syncloudconnect-main).
 
 export default async function(req) {
   try {
@@ -22,8 +16,7 @@ export default async function(req) {
     }
 
     // Resolve the authenticated user. Guest checkout is allowed, but the user
-    // id and loyalty discount are ALWAYS derived from the verified session —
-    // never from client-supplied user_id / tier_applied / discount_amount.
+    // id is ALWAYS derived from the verified session, never from the request.
     let user = null;
     try {
       user = await base44.auth.me();
@@ -34,7 +27,7 @@ export default async function(req) {
     // token alone (a physical sticker anyone near the barn can scan or
     // photograph) is not enough to act on the member's account. Require an
     // authenticated session that matches the barn's member before attributing
-    // the order or applying their loyalty tier.
+    // the order to them.
     if (barn_qr_id) {
       const members = await base44.asServiceRole.entities.User.filter(
         { barn_qr_id },
@@ -127,19 +120,8 @@ export default async function(req) {
     // Compute totals entirely server-side.
     const subtotal = +verifiedItems.reduce((sum, i) => sum + i.line_total, 0).toFixed(2);
 
-    // Discount is derived from the verified user's loyalty tier only.
-    let discount = 0;
-    let tierApplied = null;
-    if (user) {
-      const tier = user.loyalty_tier || 'bronze';
-      const rate = TIER_DISCOUNTS[tier] || 0;
-      if (rate > 0) {
-        discount = +(subtotal * rate).toFixed(2);
-        tierApplied = tier;
-      }
-    }
-    discount = Math.min(discount, subtotal);
-    const total = +Math.max(0, subtotal - discount).toFixed(2);
+    // Members pay full price: Stars are earned, never spent as a discount.
+    const total = subtotal;
 
     // Create the Order — status pending, NO inventory deduction (two-step fulfillment)
     const order = await base44.asServiceRole.entities.Order.create({
@@ -150,9 +132,9 @@ export default async function(req) {
       delivery_address: fulfillment_type === 'delivery' ? (delivery_address || null) : null,
       items: verifiedItems,
       subtotal,
-      discount_amount: discount,
+      discount_amount: 0,
       total,
-      tier_applied: tierApplied,
+      tier_applied: null,
       points_redeemed: Number(points_redeemed || 0),
       notes: notes || null
     });
@@ -227,16 +209,6 @@ export default async function(req) {
       }
     };
 
-    // Apply loyalty discount as a one-time coupon (server-computed amount)
-    if (discount > 0) {
-      const coupon = await stripe.coupons.create({
-        amount_off: Math.round(discount * 100),
-        currency: 'usd',
-        duration: 'once',
-        name: `${tierApplied || 'Loyalty'} discount`
-      });
-      sessionParams.discounts = [{ coupon: coupon.id }];
-    }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 

@@ -19,7 +19,7 @@ const FEATURES = [
   {
     icon: ShoppingCart,
     title: 'Secure Checkout',
-    desc: 'Pay safely with Stripe. Tier-based loyalty discounts apply automatically at checkout.',
+    desc: 'Pay safely with Stripe. Every dollar you spend earns Stars Club Stars.',
   },
   {
     icon: ClipboardCheck,
@@ -34,7 +34,7 @@ const FEATURES = [
   {
     icon: Star,
     title: 'SCR Stars Club',
-    desc: 'Earn a point per dollar spent. Climb Bronze → Silver → Gold → Platinum and unlock bigger discounts.',
+    desc: 'Earn a Star for every dollar spent. Paid Members also get priority delivery.',
   },
   {
     icon: QrCode,
@@ -46,22 +46,13 @@ const FEATURES = [
 const STEPS = [
   { n: '01', title: 'Place Your Order', desc: 'Browse the catalog, add items to your cart, and check out in seconds.' },
   { n: '02', title: 'Yard Picks & Verifies', desc: 'A pick ticket is created. Our yard team physically counts and verifies each line item.' },
-  { n: '03', title: 'Stock Deducted & Points Awarded', desc: 'Inventory is adjusted only after verification, and loyalty points credit when your order is fully fulfilled.' },
+  { n: '03', title: 'Stock Deducted & Stars Awarded', desc: 'Inventory is adjusted only after verification, and your Stars credit when your order is fully fulfilled.' },
 ];
 
-const TIERS = [
-  { name: 'Bronze', points: '0+', perk: 'Entry tier', discount: '—' },
-  { name: 'Silver', points: '500+', perk: '5% off every order', discount: '5%' },
-  { name: 'Gold', points: '1,000+', perk: '10% off every order', discount: '10%' },
-  { name: 'Platinum', points: '2,000+', perk: '15% off every order', discount: '15%' },
+const MEMBERSHIPS = [
+  { name: 'Free Member', perks: ['Earn a Star for every dollar', 'Barn QR quick-ordering', 'Hay arrival alerts'] },
+  { name: 'Paid Member', perks: ['Everything in Free', 'Priority delivery'] },
 ];
-
-const TIER_STYLES = {
-  Bronze: 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300',
-  Silver: 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-600 dark:bg-slate-800/60 dark:text-slate-200',
-  Gold: 'border-yellow-200 bg-yellow-50 text-yellow-800 dark:border-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-300',
-  Platinum: 'border-indigo-200 bg-indigo-50 text-indigo-800 dark:border-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300',
-};
 
 export default function Landing() {
   return (
@@ -174,17 +165,17 @@ export default function Landing() {
       <section id="loyalty" className="mx-auto max-w-5xl px-4 py-16">
         <div className="text-center mb-10">
           <h2 className="font-heading font-bold text-3xl">SCR Stars Club</h2>
-          <p className="mt-2 text-muted-foreground">Earn a point for every dollar. Climb tiers for bigger discounts.</p>
+          <p className="mt-2 text-muted-foreground">Earn a Star for every dollar. Stars are rewards, never a markdown on your order.</p>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {TIERS.map(t => (
-            <Card key={t.name} className="p-5 text-center">
-              <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium ${TIER_STYLES[t.name]}`}>
-                <Star className="h-3 w-3 fill-current" /> {t.name}
+        <div className="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
+          {MEMBERSHIPS.map(m => (
+            <Card key={m.name} className="p-5">
+              <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium">
+                <Star className="h-3 w-3 fill-current" /> {m.name}
               </span>
-              <p className="mt-3 font-heading font-bold text-2xl">{t.discount}</p>
-              <p className="mt-1 text-sm font-medium">{t.perk}</p>
-              <p className="mt-2 text-sm text-muted-foreground">{t.points} lifetime points</p>
+              <ul className="mt-3 space-y-1 text-sm">
+                {m.perks.map(p => <li key={p}>• {p}</li>)}
+              </ul>
             </Card>
           ))}
         </div>

@@ -54,9 +54,9 @@ export default function Shop() {
               <p className="text-sm text-muted-foreground">Welcome back</p>
               <p className="font-medium">{user.full_name || user.email}</p>
             </div>
-            <LoyaltyBadge tier={user.loyalty_tier} points={user.loyalty_points} />
+            <LoyaltyBadge user={user} />
           </div>
-          <LoyaltyProgress lifetimePoints={user.lifetime_points} tier={user.loyalty_tier} />
+          <LoyaltyProgress user={user} />
         </div>
       )}
 

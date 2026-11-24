@@ -1,38 +1,20 @@
 import React from 'react';
-import { getTierProgress } from '@/lib/loyalty';
-import { cn } from '@/lib/utils';
+import { membershipLabel } from '@/lib/loyalty';
 
-const TIER_DOT = {
-  bronze: 'bg-amber-400',
-  silver: 'bg-slate-300',
-  gold: 'bg-yellow-400',
-  platinum: 'bg-indigo-400',
-};
-
-export default function LoyaltyProgress({ lifetimePoints = 0, tier = 'bronze' }) {
-  const info = getTierProgress(lifetimePoints);
-
+// Stars Club summary: Stars earned and what the membership gives.
+// Stars are never a discount (ADR 0001, syncloudconnect-main).
+export default function LoyaltyProgress({ user }) {
+  const paid = user?.membership === 'paid';
   return (
-    <div className="rounded-lg border bg-card p-4 space-y-2">
+    <div className="rounded-lg border bg-card p-4 space-y-1">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className={cn('h-2.5 w-2.5 rounded-full', TIER_DOT[info.tier] || TIER_DOT.bronze)} />
-          <span className="text-sm font-medium capitalize">{info.tier} tier</span>
-        </div>
-        <span className="text-sm text-muted-foreground">{Math.round(lifetimePoints)} pts</span>
+        <span className="text-sm font-medium">{membershipLabel(user)}</span>
+        <span className="text-sm text-muted-foreground">{Math.round(user?.lifetime_points || 0)} Stars earned</span>
       </div>
-
-      <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
-        <div
-          className="h-full rounded-full bg-primary transition-all duration-500"
-          style={{ width: `${info.progress}%` }}
-        />
-      </div>
-
       <p className="text-sm text-muted-foreground">
-        {info.atTop
-          ? `You've reached the top tier — enjoy your ${Math.round((info.current.discount || 0) * 100)}% discount.`
-          : `${info.pointsRemaining} lifetime points to ${info.next.tier} (${Math.round((info.next.discount || 0) * 100)}% off).`}
+        {paid
+          ? 'Your membership includes priority delivery. Keep earning Stars on every order.'
+          : 'Earn a Star for every dollar. Paid Members also get priority delivery.'}
       </p>
     </div>
   );

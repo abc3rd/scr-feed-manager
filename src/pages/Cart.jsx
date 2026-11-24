@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Trash2, Minus, Plus, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { TIER_DISCOUNTS } from '@/lib/loyalty';
 
 export default function Cart() {
   const { items, updateQuantity, removeItem, clear, subtotal } = useCart();
@@ -16,10 +15,8 @@ export default function Cart() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
-  const tier = user?.loyalty_tier || 'bronze';
-  const discountRate = isAuthenticated ? (TIER_DISCOUNTS[tier] || 0) : 0;
-  const discountAmount = +(subtotal * discountRate).toFixed(2);
-  const total = +(subtotal - discountAmount).toFixed(2);
+  // Members pay full price; Stars are earned on completed orders (ADR 0001).
+  const total = subtotal;
 
   const handleCheckout = async () => {
     if (window.self !== window.top) {
@@ -44,8 +41,6 @@ export default function Cart() {
       const res = await base44.functions.invoke('create-checkout-session', {
         items: lineItems,
         user_id: user?.id || null,
-        discount_amount: discountAmount,
-        tier_applied: isAuthenticated ? tier : null,
         success_url: `${window.location.origin}/order-success`,
         cancel_url: `${window.location.origin}/cart`,
       });
@@ -111,10 +106,10 @@ export default function Cart() {
           <span className="text-muted-foreground">Subtotal</span>
           <span>${subtotal.toFixed(2)}</span>
         </div>
-        {discountAmount > 0 && (
-          <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
-            <span className="capitalize">{tier} discount ({discountRate * 100}%)</span>
-            <span>−${discountAmount.toFixed(2)}</span>
+        {isAuthenticated && (
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <span>Stars you'll earn</span>
+            <span>{Math.floor(subtotal)}</span>
           </div>
         )}
         <div className="flex justify-between font-bold pt-2 border-t">
