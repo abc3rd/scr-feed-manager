@@ -30,8 +30,8 @@ jobs:
           mkdir -p _pages
           cp public/proposal.html _pages/index.html
           mkdir -p _pages/delete-account _pages/privacy
-          cp public/delete-account.html _pages/delete-account/index.html
-          cp public/privacy.html _pages/privacy/index.html
+          cp delete-account/index.html _pages/delete-account/index.html
+          cp privacy/index.html _pages/privacy/index.html
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
