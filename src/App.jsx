@@ -16,6 +16,7 @@ const Landing = lazy(() => import('./pages/Landing'));
 const About = lazy(() => import('./pages/About'));
 const Contact = lazy(() => import('./pages/Contact'));
 const BarnProfile = lazy(() => import('./pages/BarnProfile'));
+const ProductQr = lazy(() => import('./pages/ProductQr'));
 const Shop = lazy(() => import('./pages/Shop'));
 const Cart = lazy(() => import('./pages/Cart'));
 const OrderSuccess = lazy(() => import('./pages/OrderSuccess'));
@@ -56,6 +57,7 @@ const AnimatedRoutes = () => {
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/barn/:token" element={<BarnProfile />} />
+            <Route path="/q/:productId" element={<ProductQr />} />
             <Route element={<AppLayout />}>
               <Route path="/shop" element={<Shop />} />
               <Route path="/cart" element={<Cart />} />

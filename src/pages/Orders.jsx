@@ -37,7 +37,7 @@ export default function Orders() {
         base44.entities.Order.filter({ user_id: user.id }, '-created_date', 50),
         base44.entities.PickTicket.filter({ user_id: user.id }, '-created_date', 200),
       ]);
-      const productIds = [...new Set(myOrders.flatMap((o) => (o.items || []).map((i) => i.product_id)).filter(Boolean))];
+      const productIds = [...new Set(myOrders.flatMap((o) => (o.items || []).map((i) => i.product_id)).filter((id) => /^[a-f0-9]{24}$/i.test(String(id))))];
       const products = productIds.length
         ? await base44.entities.Product.filter({ id: { $in: productIds } }, '-created_date', productIds.length)
         : [];
