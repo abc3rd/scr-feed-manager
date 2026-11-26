@@ -128,7 +128,7 @@ export default async function (req) {
         price: Number(p.price),
         available: availableQty(p),
         tracks_stock: p.track_stock !== false,
-        tags: tag,
+        tags: [tag],
       });
     };
     if (authenticated) {
