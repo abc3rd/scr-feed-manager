@@ -59,7 +59,12 @@ export default async function(req) {
     for (const item of updatedPickItems) {
       const deduct = Number(item.verified_quantity || 0);
       const release = Number(item.requested_quantity || 0);
-      const product = await base44.asServiceRole.entities.Product.get(item.product_id);
+      let product = null;
+      try {
+        product = await base44.asServiceRole.entities.Product.get(item.product_id);
+      } catch {
+        product = null;
+      }
       if (product) {
         const newStock = Math.max(0, Number(product.stock_quantity || 0) - deduct);
         const newReserved = Math.max(0, Number(product.reserved_quantity || 0) - release);
