@@ -1,82 +1,62 @@
 {
   "name": "Order",
-  "type": "object",
   "properties": {
-    "order_number": {
-      "type": "string"
-    },
-    "user_id": {
+    "checkout_channel": {
+      "description": "Where payment happens: 'shopify' (Shopify checkout on scrfeed.com).",
       "type": [
         "string",
         "null"
       ]
     },
-    "status": {
-      "type": "string",
-      "enum": [
-        "pending",
-        "ticket_generated",
-        "picking",
-        "partially_fulfilled",
-        "completed",
-        "cancelled"
-      ],
-      "default": "pending",
-      "description": "pending = order placed. ticket_generated = pick ticket(s) created. picking = yard worker assigned. partially_fulfilled = some tickets done, others open. completed = ALL tickets done; loyalty points awarded at this transition only."
+    "checkout_url": {
+      "description": "Shopify cart permalink the customer was sent to. The Shopify order carries this order's number as the 'SCR order' cart attribute.",
+      "type": [
+        "string",
+        "null"
+      ]
     },
-    "payment_status": {
-      "type": "string",
-      "enum": [
-        "unpaid",
-        "paid",
-        "refunded",
-        "failed"
-      ],
-      "default": "unpaid"
+    "delivery_address": {
+      "description": "Required when fulfillment_type is delivery.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "discount_amount": {
+      "default": 0,
+      "type": "number"
     },
     "fulfillment_type": {
-      "type": "string",
+      "default": "pickup",
+      "description": "How the customer wants the order fulfilled. Set at checkout (including from the Barn Profile quick-order form).",
       "enum": [
         "pickup",
         "delivery"
       ],
-      "default": "pickup",
-      "description": "How the customer wants the order fulfilled. Set at checkout (including from the Barn Profile quick-order form)."
-    },
-    "delivery_address": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "description": "Required when fulfillment_type is delivery."
-    },
-    "stripe_session_id": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
     },
     "items": {
-      "type": "array",
       "items": {
-        "type": "object",
         "properties": {
-          "product_id": {
-            "type": "string"
+          "line_total": {
+            "type": "number"
           },
           "name": {
             "type": "string"
           },
-          "unit_of_measure": {
+          "product_id": {
             "type": "string"
           },
           "quantity": {
             "type": "number"
           },
-          "unit_price": {
-            "type": "number"
+          "shopify_variant_id": {
+            "type": "string"
           },
-          "line_total": {
+          "unit_of_measure": {
+            "type": "string"
+          },
+          "unit_price": {
             "type": "number"
           }
         },
@@ -86,35 +66,71 @@
           "quantity",
           "unit_price",
           "line_total"
-        ]
-      }
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "notes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "order_number": {
+      "type": "string"
+    },
+    "payment_status": {
+      "default": "unpaid",
+      "enum": [
+        "unpaid",
+        "paid",
+        "refunded",
+        "failed"
+      ],
+      "type": "string"
+    },
+    "points_earned": {
+      "default": 0,
+      "type": "number"
+    },
+    "points_redeemed": {
+      "default": 0,
+      "type": "number"
+    },
+    "status": {
+      "default": "pending",
+      "description": "pending = order placed. ticket_generated = pick ticket(s) created. picking = yard worker assigned. partially_fulfilled = some tickets done, others open. completed = ALL tickets done; loyalty points awarded at this transition only.",
+      "enum": [
+        "pending",
+        "ticket_generated",
+        "picking",
+        "partially_fulfilled",
+        "completed",
+        "cancelled"
+      ],
+      "type": "string"
+    },
+    "stripe_session_id": {
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "subtotal": {
       "type": "number"
     },
-    "discount_amount": {
-      "type": "number",
-      "default": 0
+    "tier_applied": {
+      "description": "Deprecated: tier discounts were removed (ADR 0001). Always null on new orders.",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "total": {
       "type": "number"
     },
-    "tier_applied": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "description": "Deprecated: tier discounts were removed (ADR 0001). Always null on new orders."
-    },
-    "points_earned": {
-      "type": "number",
-      "default": 0
-    },
-    "points_redeemed": {
-      "type": "number",
-      "default": 0
-    },
-    "notes": {
+    "user_id": {
       "type": [
         "string",
         "null"
@@ -126,6 +142,7 @@
     "items",
     "total"
   ],
+  "type": "object",
   "rls": {
     "create": {
       "$or": [
