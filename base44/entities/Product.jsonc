@@ -1,18 +1,7 @@
 {
   "name": "Product",
-  "type": "object",
   "properties": {
-    "name": {
-      "type": "string"
-    },
-    "sku": {
-      "type": "string"
-    },
-    "description": {
-      "type": "string"
-    },
     "category": {
-      "type": "string",
       "enum": [
         "hay",
         "feed",
@@ -21,13 +10,72 @@
         "bedding",
         "equipment",
         "other"
-      ]
+      ],
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "is_active": {
+      "default": true,
+      "type": "boolean"
+    },
+    "is_bulk": {
+      "default": false,
+      "type": "boolean"
+    },
+    "name": {
+      "type": "string"
     },
     "price": {
       "type": "number"
     },
+    "product_type": {
+      "description": "Shopify product type, kept for filtering.",
+      "type": "string"
+    },
+    "qr_code_id": {
+      "description": "Unique token encoded in the in-barn QR sticker. Scanning it opens this product page.",
+      "type": "string"
+    },
+    "reorder_threshold": {
+      "default": 0,
+      "type": "number"
+    },
+    "reserved_quantity": {
+      "default": 0,
+      "description": "Stock soft-reserved by pending orders awaiting pick verification. Available = stock_quantity - reserved_quantity.",
+      "type": "number"
+    },
+    "shopify_handle": {
+      "description": "Shopify product handle; the product page is https://scrfeed.com/products/<handle>.",
+      "type": "string"
+    },
+    "shopify_product_id": {
+      "description": "Shopify product id (numeric) this record was synced from.",
+      "type": "string"
+    },
+    "shopify_variant_id": {
+      "description": "Shopify variant id (numeric). Checkout sends this variant to the Shopify cart.",
+      "type": "string"
+    },
+    "sku": {
+      "type": "string"
+    },
+    "stock_quantity": {
+      "default": 0,
+      "type": "number"
+    },
+    "track_stock": {
+      "default": true,
+      "description": "When false, the app does not limit or reserve by stock_quantity; the yard count at pick time is the check (count-before-charge). Products synced from Shopify use false, matching Shopify's continue-selling policy.",
+      "type": "boolean"
+    },
     "unit_of_measure": {
-      "type": "string",
+      "default": "each",
       "enum": [
         "each",
         "bag",
@@ -38,35 +86,7 @@
         "block",
         "gallon"
       ],
-      "default": "each"
-    },
-    "is_bulk": {
-      "type": "boolean",
-      "default": false
-    },
-    "stock_quantity": {
-      "type": "number",
-      "default": 0
-    },
-    "reserved_quantity": {
-      "type": "number",
-      "default": 0,
-      "description": "Stock soft-reserved by pending orders awaiting pick verification. Available = stock_quantity - reserved_quantity."
-    },
-    "reorder_threshold": {
-      "type": "number",
-      "default": 0
-    },
-    "qr_code_id": {
-      "type": "string",
-      "description": "Unique token encoded in the in-barn QR sticker. Scanning it opens this product page."
-    },
-    "image_url": {
       "type": "string"
-    },
-    "is_active": {
-      "type": "boolean",
-      "default": true
     }
   },
   "required": [
@@ -75,6 +95,7 @@
     "unit_of_measure",
     "category"
   ],
+  "type": "object",
   "rls": {
     "create": {
       "$or": [
