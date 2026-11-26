@@ -5,11 +5,13 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 // prices. Shopify stays the source of truth: prices and names are overwritten
 // on every run, and checkout hands the cart back to Shopify by variant id.
 //
-// Reads the store's public /products.json feed, so no Shopify credentials are
-// needed. Callable by an admin, or with the CATALOG_SYNC_KEY secret in the
+// Reads the store's public Storefront API (tokenless access to published
+// products), so no Shopify credentials are needed. Callable by an admin, or with the CATALOG_SYNC_KEY secret in the
 // x-sync-key header (for a scheduled run).
 
-const STORE_URL = Deno.env.get('SHOPIFY_STORE_URL') || 'https://scrfeed.com';
+const SHOP_DOMAIN = Deno.env.get('SHOPIFY_SHOP_DOMAIN') || 'mdppwz-j0.myshopify.com';
+const STOREFRONT_API = `https://${SHOP_DOMAIN}/api/2025-07/graphql.json`;
+const numericId = (gid: unknown) => String(gid ?? '').split('/').pop() || '';
 const SKIP_TYPES = new Set(['Membership', 'Services']);
 
 const TYPE_CATEGORY: Record<string, string> = {
@@ -40,45 +42,68 @@ export function unitFor(name: string, category: string) {
   return 'each';
 }
 
-// One Product record per Shopify variant.
+// One Product record per Shopify variant. `p` is a Storefront API product node.
 export function recordsFromShopifyProduct(p: any) {
-  if (SKIP_TYPES.has(clean(p.product_type))) return [];
-  const category = categoryFor(p);
+  const productType = clean(p.productType);
+  if (SKIP_TYPES.has(productType)) return [];
+  const category = categoryFor({ product_type: productType, tags: p.tags });
   const title = clean(p.title);
-  const productImage = p.images?.[0]?.src || p.image?.src || null;
-  return (p.variants || []).map((v: any) => {
+  const productImage = p.featuredImage?.url || null;
+  const description = stripHtml(p.description) || undefined;
+  return (p.variants?.nodes || []).map((v: any) => {
     const variantTitle = clean(v.title);
     const name = variantTitle && variantTitle !== 'Default Title' ? `${title} - ${variantTitle}` : title;
-    const image = (p.images || []).find((img: any) => (img.variant_ids || []).includes(v.id))?.src || productImage;
+    const price = Number(v.price?.amount);
     return {
       name,
       sku: v.sku || undefined,
-      description: stripHtml(p.body_html) || undefined,
+      description,
       category,
-      price: Number(v.price),
+      price,
       unit_of_measure: unitFor(name, category),
-      image_url: image || undefined,
-      is_active: v.available !== false && Number(v.price) > 0,
+      image_url: v.image?.url || productImage || undefined,
+      is_active: v.availableForSale !== false && price > 0,
       track_stock: false,
-      shopify_product_id: String(p.id),
-      shopify_variant_id: String(v.id),
+      shopify_product_id: numericId(p.id),
+      shopify_variant_id: numericId(v.id),
       shopify_handle: p.handle,
-      product_type: clean(p.product_type) || undefined,
+      product_type: productType || undefined,
     };
   });
 }
 
+const CATALOG_QUERY = `query Catalog($after: String) {
+  products(first: 50, after: $after) {
+    pageInfo { hasNextPage endCursor }
+    nodes {
+      id title handle productType tags description(truncateAt: 400)
+      featuredImage { url }
+      variants(first: 100) { nodes { id title sku availableForSale price { amount } image { url } } }
+    }
+  }
+}`;
+
 async function fetchAllShopifyProducts(fetchImpl = fetch) {
   const all: any[] = [];
-  for (let page = 1; page <= 40; page++) {
-    const res = await fetchImpl(`${STORE_URL}/products.json?limit=250&page=${page}`, {
-      headers: { 'accept': 'application/json', 'user-agent': 'SCR-Feed-Catalog-Sync/1.0' },
-    });
-    if (!res.ok) throw new Error(`Shopify catalog page ${page} returned ${res.status}`);
+  let after: string | null = null;
+  for (let page = 1; page <= 200; page++) {
+    let res: Response | null = null;
+    for (let attempt = 0; attempt < 4; attempt++) {
+      res = await fetchImpl(STOREFRONT_API, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'accept': 'application/json' },
+        body: JSON.stringify({ query: CATALOG_QUERY, variables: { after } }),
+      });
+      if (res.status !== 429 && res.status < 500) break;
+      await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+    }
+    if (!res || !res.ok) throw new Error(`Shopify catalog page ${page} returned ${res?.status}`);
     const body = await res.json();
-    const products = body?.products || [];
-    all.push(...products);
-    if (products.length < 250) break;
+    if (body.errors) throw new Error(`Shopify catalog error: ${JSON.stringify(body.errors).slice(0, 300)}`);
+    const conn = body?.data?.products;
+    all.push(...(conn?.nodes || []));
+    if (!conn?.pageInfo?.hasNextPage) break;
+    after = conn.pageInfo.endCursor;
   }
   return all;
 }
