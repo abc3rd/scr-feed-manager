@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { ScanLine, Search, Trash2, Send, Camera, X, CheckCircle2, Loader2 } from 'lucide-react';
+import jsQR from 'jsqr';
 
 // Count screen: staff scan a Product QR (or search), type what is on the shelf,
 // and send the session. The session goes to n8n through the submit-count
@@ -44,6 +45,8 @@ async function findProduct(raw) {
   return rows[0] || null;
 }
 
+// QR scanning with jsQR on frames from the rear camera, so it works the same
+// in iPhone Safari, Android Chrome and desktop browsers (no BarcodeDetector).
 function Scanner({ onCode, onClose }) {
   const videoRef = useRef(null);
   const [error, setError] = useState(null);
@@ -51,34 +54,47 @@ function Scanner({ onCode, onClose }) {
   useEffect(() => {
     let stream;
     let stopped = false;
-    let timer;
+    let frame;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     (async () => {
-      if (!('BarcodeDetector' in window)) {
-        setError('This phone\'s browser can\'t scan here. Use Chrome on Android, or search by name below.');
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setError('This browser can\'t open the camera. Open the app in Safari or Chrome, or search by name below.');
         return;
       }
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        if (stopped) return;
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-        const detector = new window.BarcodeDetector({ formats: ['qr_code', 'code_128', 'ean_13', 'upc_a'] });
-        const tick = async () => {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+        });
+        if (stopped) { stream.getTracks().forEach((t) => t.stop()); return; }
+        const video = videoRef.current;
+        video.setAttribute('playsinline', 'true');
+        video.setAttribute('webkit-playsinline', 'true');
+        video.muted = true;
+        video.srcObject = stream;
+        await video.play();
+        const tick = () => {
           if (stopped) return;
-          try {
-            const codes = await detector.detect(videoRef.current);
-            if (codes.length) { onCode(codes[0].rawValue); return; }
-          } catch { /* frame not ready */ }
-          timer = setTimeout(tick, 250);
+          if (video.readyState >= 2 && video.videoWidth) {
+            const scale = Math.min(1, 640 / video.videoWidth);
+            canvas.width = Math.round(video.videoWidth * scale);
+            canvas.height = Math.round(video.videoHeight * scale);
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+            if (code?.data) { onCode(code.data); return; }
+          }
+          frame = requestAnimationFrame(tick);
         };
-        tick();
+        frame = requestAnimationFrame(tick);
       } catch {
-        setError('Camera is blocked. Allow the camera for this site, or search by name below.');
+        setError('The camera is blocked. On iPhone: Settings > Safari > Camera > Allow, then tap Scan again. Or search by name below.');
       }
     })();
     return () => {
       stopped = true;
-      clearTimeout(timer);
+      cancelAnimationFrame(frame);
       stream?.getTracks().forEach((t) => t.stop());
     };
   }, [onCode]);
@@ -90,7 +106,7 @@ function Scanner({ onCode, onClose }) {
         <button onClick={onClose} aria-label="Close scanner" className="h-9 w-9 flex items-center justify-center"><X className="h-4 w-4" /></button>
       </div>
       {error ? <p className="text-sm text-destructive">{error}</p> : (
-        <video ref={videoRef} className="w-full rounded-md bg-black aspect-video object-cover" muted playsInline />
+        <video ref={videoRef} className="w-full rounded-md bg-black aspect-video object-cover" autoPlay muted playsInline />
       )}
     </Card>
   );
