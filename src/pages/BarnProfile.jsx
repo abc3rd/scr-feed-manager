@@ -219,7 +219,7 @@ export default function BarnProfile() {
                       </div>
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex flex-wrap gap-1">
-                          {item.tags.map((t) => (
+                          {[].concat(item.tags || []).map((t) => (
                             <span key={t} className={cn('text-xs px-2 py-0.5 rounded-full', TAG_STYLES[t])}>
                               {TAG_LABELS[t]}
                             </span>
