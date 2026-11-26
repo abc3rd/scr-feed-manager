@@ -1,1 +1,1 @@
-globalThis.Deno = { env: { get: () => 'test-app-id' } };
+globalThis.Deno = { env: { get: (name) => (name === 'BASE44_APP_ID' ? 'test-app-id' : undefined) } };
