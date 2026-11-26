@@ -41,6 +41,7 @@ export default function Shop() {
   const announcementsQuery = useQuery({
     queryKey: ['announcements', 'active'],
     queryFn: () => base44.entities.Announcement.filter({ is_active: true }, '-created_date', 5),
+    staleTime: 60 * 1000,
   });
   const trendingQuery = useQuery({
     queryKey: ['trending-products'],

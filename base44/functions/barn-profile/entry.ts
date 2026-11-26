@@ -1,5 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
+// Active promo announcements are the same for every barn, so cache the shared
+// read for a short while instead of re-reading on every call.
+let promosCache = null;
+let promosCacheAt = 0;
+const PROMOS_TTL = 60_000;
+
 // Resolves a member by their barn QR token and returns a personalized
 // quick-order payload: most-ordered items, available hay, promoted/popular
 // items, and active promo announcements. No other member's data is exposed.
@@ -107,12 +113,17 @@ export default async function (req) {
       : [];
     const productById = new Map([...ordered, ...hay].map((p) => [p.id, p]));
 
-    // Active promo announcements.
-    const promos = await base44.asServiceRole.entities.Announcement.filter(
-      { is_active: true, type: 'promo' },
-      '-created_date',
-      5
-    );
+    // Active promo announcements (cached briefly — shared across all callers).
+    let promos = promosCache && Date.now() - promosCacheAt < PROMOS_TTL ? promosCache : null;
+    if (!promos) {
+      promos = await base44.asServiceRole.entities.Announcement.filter(
+        { is_active: true, type: 'promo' },
+        '-created_date',
+        5
+      );
+      promosCache = promos;
+      promosCacheAt = Date.now();
+    }
 
     // Merge into a single deduped form item list, ordered: most-ordered, hay, popular.
     const seen = new Set();

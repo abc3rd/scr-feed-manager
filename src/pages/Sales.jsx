@@ -30,6 +30,7 @@ export default function Sales() {
       return { orders, products };
     },
     enabled: !!isStaff,
+    staleTime: 60 * 1000,
   });
 
   if (!isStaff) {
