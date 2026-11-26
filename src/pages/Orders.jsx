@@ -12,6 +12,7 @@ import FulfillmentProgress from '@/components/FulfillmentProgress';
 import { Package, RotateCw, Plus, Repeat2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import PullToRefresh from '@/components/PullToRefresh';
+import BuyAgain from '@/components/BuyAgain';
 import { availableQty } from '@/lib/stock';
 
 function monthKey(d) {
@@ -125,6 +126,8 @@ export default function Orders() {
             <RotateCw className={cn('h-4 w-4', refreshing && 'animate-spin')} />
           </button>
         </div>
+
+        <BuyAgain orders={orders} stockMap={stockMap} onAdd={reorderItem} />
 
         {groupKeys.map((key) => (
           <div key={key} className="space-y-2">
