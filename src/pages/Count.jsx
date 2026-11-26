@@ -49,12 +49,15 @@ async function findProduct(raw) {
 // in iPhone Safari, Android Chrome and desktop browsers (no BarcodeDetector).
 function Scanner({ onCode, onClose }) {
   const videoRef = useRef(null);
+  const onCodeRef = useRef(onCode);
   const [error, setError] = useState(null);
+  onCodeRef.current = onCode;
 
   useEffect(() => {
     let stream;
     let stopped = false;
     let frame;
+    let last = 0;
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     (async () => {
@@ -76,14 +79,16 @@ function Scanner({ onCode, onClose }) {
         await video.play();
         const tick = () => {
           if (stopped) return;
-          if (video.readyState >= 2 && video.videoWidth) {
+          const now = performance.now();
+          if (now - last > 120 && video.readyState >= 2 && video.videoWidth) {
+            last = now;
             const scale = Math.min(1, 640 / video.videoWidth);
             canvas.width = Math.round(video.videoWidth * scale);
             canvas.height = Math.round(video.videoHeight * scale);
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
-            if (code?.data) { onCode(code.data); return; }
+            if (code?.data) { stopped = true; onCodeRef.current(code.data); return; }
           }
           frame = requestAnimationFrame(tick);
         };
@@ -97,7 +102,7 @@ function Scanner({ onCode, onClose }) {
       cancelAnimationFrame(frame);
       stream?.getTracks().forEach((t) => t.stop());
     };
-  }, [onCode]);
+  }, []);
 
   return (
     <Card className="p-3 space-y-2">
