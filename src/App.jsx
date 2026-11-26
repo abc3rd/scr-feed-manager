@@ -25,6 +25,7 @@ const OrderDetail = lazy(() => import('./pages/OrderDetail'));
 const Fulfillment = lazy(() => import('./pages/Fulfillment'));
 const FulfillmentDetail = lazy(() => import('./pages/FulfillmentDetail'));
 const Sales = lazy(() => import('./pages/Sales'));
+const Count = lazy(() => import('./pages/Count'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
@@ -67,6 +68,7 @@ const AnimatedRoutes = () => {
               <Route path="/fulfillment" element={<Fulfillment />} />
               <Route path="/fulfillment/:ticketId" element={<FulfillmentDetail />} />
               <Route path="/sales" element={<Sales />} />
+              <Route path="/count" element={<Count />} />
             </Route>
             <Route path="*" element={<PageNotFound />} />
           </Routes>
