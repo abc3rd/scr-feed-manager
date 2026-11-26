@@ -7,6 +7,7 @@ import completePickTicket from '../base44/functions/complete-pick-ticket/entry.t
 const hay = {
   id: 'p_hay', name: 'Coastal hay', category: 'hay', price: 12.5,
   unit_of_measure: 'bale', stock_quantity: 40, reserved_quantity: 0, is_active: true,
+  shopify_variant_id: '333',
 };
 const staff = { id: 'u_staff', role: 'staff' };
 

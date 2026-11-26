@@ -1,6 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { useFakeBase44 } from './fakes/base44-sdk.js';
-import { stripeCalls } from './fakes/stripe.js';
 import { jsonRequest } from './helpers.js';
 import checkout from '../base44/functions/create-checkout-session/entry.ts';
 import completePickTicket from '../base44/functions/complete-pick-ticket/entry.ts';
@@ -9,6 +8,7 @@ import completePickTicket from '../base44/functions/complete-pick-ticket/entry.t
 const feed = {
   id: 'p_feed', name: 'Sweet feed', category: 'feed', price: 20,
   unit_of_measure: 'bag', stock_quantity: 50, reserved_quantity: 0, is_active: true,
+  shopify_variant_id: '222',
 };
 const longtimeMember = {
   id: 'u_member', role: 'customer', membership: 'paid',
@@ -16,8 +16,6 @@ const longtimeMember = {
 };
 
 describe('Stars never discount a sale', () => {
-  beforeEach(() => { stripeCalls.sessions.length = 0; stripeCalls.coupons.length = 0; });
-
   it('a long-time Paid Member pays full price', async () => {
     const db = useFakeBase44({ user: longtimeMember, products: [feed] });
 
@@ -27,8 +25,9 @@ describe('Stars never discount a sale', () => {
     const order = db.orders()[0];
     expect(order.total).toBe(60);
     expect(order.discount_amount).toBe(0);
-    expect(stripeCalls.coupons).toHaveLength(0);
-    expect(stripeCalls.sessions[0].discounts).toBeUndefined();
+    const { url } = await res.json();
+    expect(url).toContain('/cart/222:3?');
+    expect(url).not.toMatch(/discount/i);
   });
 
   it('completing an order earns Stars for every dollar but assigns no tier', async () => {
