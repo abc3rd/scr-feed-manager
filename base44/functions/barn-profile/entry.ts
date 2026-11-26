@@ -95,7 +95,9 @@ export default async function (req) {
       .slice(0, 8)
       .map((e) => e.product_id);
 
-    const wantedIds = [...new Set([...(authenticated ? mostOrderedIds : []), ...popularIds])];
+    // Old orders can hold product ids that are not record ids; skip those.
+    const wantedIds = [...new Set([...(authenticated ? mostOrderedIds : []), ...popularIds])]
+      .filter((id) => /^[a-f0-9]{24}$/i.test(String(id)));
     const ordered = wantedIds.length
       ? await base44.asServiceRole.entities.Product.filter(
           { id: { $in: wantedIds }, is_active: true },
