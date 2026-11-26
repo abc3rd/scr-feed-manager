@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Image } from '@/components/ui/image';
@@ -69,12 +70,23 @@ export default function Landing() {
             <a href="#loyalty" className="hover:text-foreground">Loyalty</a>
           </nav>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/login">Sign In</Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link to="/shop">Shop Now</Link>
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <Button variant="ghost" size="sm" onClick={() => logout()}>Sign out</Button>
+                <Button size="sm" asChild>
+                  <Link to="/shop">Open app</Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/login">Sign In</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link to="/shop">Shop Now</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -208,7 +220,11 @@ export default function Landing() {
             <Link to="/shop" className="hover:text-foreground">Shop</Link>
             <Link to="/about" className="hover:text-foreground">About</Link>
             <Link to="/contact" className="hover:text-foreground">Contact</Link>
-            <Link to="/login" className="hover:text-foreground">Sign In</Link>
+            {isAuthenticated ? (
+              <button type="button" onClick={() => logout()} className="hover:text-foreground">Sign out</button>
+            ) : (
+              <Link to="/login" className="hover:text-foreground">Sign In</Link>
+            )}
           </div>
         </div>
       </footer>
