@@ -56,6 +56,7 @@ const MEMBERSHIPS = [
 ];
 
 export default function Landing() {
+  const { isAuthenticated, logout } = useAuth();
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
