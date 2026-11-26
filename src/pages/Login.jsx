@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { loginWithMfa } from "@/lib/authMfa";
+import { signInWithProvider } from "@/lib/authMfaFlow";
+import MfaFlow from "@/components/MfaFlow";
+import { MfaScreen } from "@/components/MfaParts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +17,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mfaChallenge, setMfaChallenge] = useState(null);
   // Post-login destination (e.g. the MCP OAuth consent page sends users here
   // with returnTo so the grant flow can resume). Same-origin paths only.
   const returnTo = safeReturnTo();
@@ -23,8 +27,14 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await base44.auth.loginViaEmailPassword(email, password);
-      window.location.href = returnTo;
+      const result = await loginWithMfa(email, password);
+      if (result?.access_token) {
+        window.location.href = returnTo;
+      } else if (result?.mfa_session_token) {
+        setMfaChallenge(result);
+      } else {
+        setError("Sign-in failed. Please try again.");
+      }
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {
@@ -33,8 +43,16 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", returnTo);
+    signInWithProvider("google", returnTo);
   };
+
+  if (mfaChallenge) {
+    return (
+      <MfaScreen>
+        <MfaFlow challenge={mfaChallenge} returnTo={returnTo} />
+      </MfaScreen>
+    );
+  }
 
   return (
     <AuthLayout

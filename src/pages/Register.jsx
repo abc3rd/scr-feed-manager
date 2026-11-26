@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { signInWithProvider } from "@/lib/authMfaFlow";
+import MfaFlow from "@/components/MfaFlow";
+import { MfaScreen } from "@/components/MfaParts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +22,8 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+  const [mfaChallenge, setMfaChallenge] = useState(null);
+  const returnTo = safeReturnTo();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,8 +50,12 @@ export default function Register() {
       const result = await base44.auth.verifyOtp({ email, otpCode });
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
+        window.location.href = returnTo;
+      } else if (result?.mfa_session_token) {
+        setMfaChallenge(result);
+      } else {
+        setError("Verification failed. Please try again.");
       }
-      window.location.href = safeReturnTo();
     } catch (err) {
       setError(err.message || "Invalid verification code");
     } finally {
@@ -68,8 +77,16 @@ export default function Register() {
   };
 
   const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", safeReturnTo());
+    signInWithProvider("google", returnTo);
   };
+
+  if (mfaChallenge) {
+    return (
+      <MfaScreen>
+        <MfaFlow challenge={mfaChallenge} returnTo={returnTo} />
+      </MfaScreen>
+    );
+  }
 
   if (showOtp) {
     return (

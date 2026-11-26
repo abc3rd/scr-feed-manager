@@ -30,6 +30,7 @@ const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const Mfa = lazy(() => import('./pages/Mfa'));
 const OAuthConsent = lazy(() => import('./pages/OAuthConsent'));
 
 const PageLoader = () => (
@@ -66,6 +67,7 @@ const AnimatedRoutes = () => {
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/mfa" element={<Mfa />} />
             <Route path="/oauth/consent" element={<OAuthConsent />} />
             <Route path="/" element={<Landing />} />
             <Route path="/about" element={<About />} />
