@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, Suspense } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingBag, ShoppingCart, Package, ClipboardCheck, BarChart3, LogOut, Settings, ArrowLeft } from 'lucide-react';
+import { ShoppingBag, ShoppingCart, Package, ClipboardCheck, BarChart3, LogOut, Settings, ArrowLeft, ScanLine } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
 import { useAuth } from '@/lib/AuthContext';
 import { cn } from '@/lib/utils';
@@ -68,6 +68,7 @@ export default function AppLayout() {
   ];
   if (isStaff) {
     navItems.push({ to: '/fulfillment', label: 'Fulfill', icon: ClipboardCheck });
+    navItems.push({ to: '/count', label: 'Count', icon: ScanLine });
     navItems.push({ to: '/sales', label: 'Sales', icon: BarChart3 });
   }
 
