@@ -12,6 +12,7 @@ import FulfillmentProgress from '@/components/FulfillmentProgress';
 import { Package, RotateCw, Plus, Repeat2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import PullToRefresh from '@/components/PullToRefresh';
+import { availableQty } from '@/lib/stock';
 
 function monthKey(d) {
   const date = new Date(d);
@@ -32,11 +33,14 @@ export default function Orders() {
     queryKey: ['orders', user?.id],
     enabled: !!isAuthenticated && !!user?.id,
     queryFn: async () => {
-      const [myOrders, myTickets, products] = await Promise.all([
+      const [myOrders, myTickets] = await Promise.all([
         base44.entities.Order.filter({ user_id: user.id }, '-created_date', 50),
         base44.entities.PickTicket.filter({ user_id: user.id }, '-created_date', 200),
-        base44.entities.Product.list('-created_date', 200),
       ]);
+      const productIds = [...new Set(myOrders.flatMap((o) => (o.items || []).map((i) => i.product_id)).filter(Boolean))];
+      const products = productIds.length
+        ? await base44.entities.Product.filter({ id: { $in: productIds } }, '-created_date', productIds.length)
+        : [];
       const ticketMap = {};
       for (const t of myTickets) (ticketMap[t.order_id] ||= []).push(t);
       const stockMap = {};
@@ -54,7 +58,7 @@ export default function Orders() {
 
   const reorderItem = (item) => {
     const product = stockMap[item.product_id];
-    const available = product ? Number(product.stock_quantity || 0) - Number(product.reserved_quantity || 0) : 0;
+    const available = product && product.is_active !== false ? availableQty(product) : 0;
     if (!product || available <= 0) {
       toast({ title: 'Unavailable', description: `${item.name} is out of stock.`, variant: 'destructive' });
       return;
@@ -68,7 +72,7 @@ export default function Orders() {
     const skipped = [];
     for (const item of (order.items || [])) {
       const product = stockMap[item.product_id];
-      const available = product ? Number(product.stock_quantity || 0) - Number(product.reserved_quantity || 0) : 0;
+      const available = product && product.is_active !== false ? availableQty(product) : 0;
       if (!product || available <= 0) { skipped.push(item.name); continue; }
       addItem({ id: product.id, name: product.name, unit_of_measure: product.unit_of_measure, price: product.price }, Number(item.quantity) || 1);
       added++;
@@ -149,7 +153,7 @@ export default function Orders() {
                   <div className="space-y-1 pt-2 border-t">
                     {order.items?.map((item, i) => {
                       const product = stockMap[item.product_id];
-                      const available = product ? Number(product.stock_quantity || 0) - Number(product.reserved_quantity || 0) : 0;
+                      const available = product && product.is_active !== false ? availableQty(product) : 0;
                       const out = available <= 0;
                       return (
                         <div key={i} className="flex items-center justify-between text-sm gap-2">

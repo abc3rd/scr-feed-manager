@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import { Plus } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
+import { availableQty, tracksStock } from '@/lib/stock';
 
 export default function ProductCard({ product }) {
   const { addItem } = useCart();
-  const available = Number(product.stock_quantity || 0) - Number(product.reserved_quantity || 0);
+  const available = availableQty(product);
   const outOfStock = available <= 0;
   const needsPrice = !(Number(product.price) > 0);
 
@@ -35,7 +36,7 @@ export default function ProductCard({ product }) {
             {outOfStock ? <span className="text-xs">Sold out</span> : <Plus className="h-4 w-4" />}
           </Button>
         </div>
-        {!outOfStock && available <= 5 && (
+        {tracksStock(product) && !outOfStock && available <= 5 && (
           <p className="text-sm text-amber-600 dark:text-amber-400">Only {available} left</p>
         )}
       </div>

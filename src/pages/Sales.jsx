@@ -64,7 +64,7 @@ export default function Sales() {
   }
   const topProducts = Object.values(productTotals).sort((a, b) => b.units - a.units).slice(0, 5);
 
-  const lowStock = products.filter(p => p.reorder_threshold > 0 && (p.stock_quantity - (p.reserved_quantity || 0)) <= p.reorder_threshold);
+  const lowStock = products.filter(p => p.track_stock !== false && p.reorder_threshold > 0 && (p.stock_quantity - (p.reserved_quantity || 0)) <= p.reorder_threshold);
 
   const refresh = () => query.refetch();
 
