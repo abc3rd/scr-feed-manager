@@ -1,0 +1,40 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "Order"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "ghl_order_sync",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "push_to_ghl": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "sync-order-to-ghl",
+            "args": {
+              "order_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Push order to GoHighLevel",
+            "description": "Create contact + opportunity in GHL"
+          }
+        }
+      }
+    ]
+  },
+  "name": "GHL Order Sync",
+  "description": "When a new order is placed, push it to GoHighLevel as a contact and opportunity for CRM lead tracking and membership management."
+}
