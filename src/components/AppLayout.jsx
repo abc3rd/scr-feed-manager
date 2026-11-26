@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect, Suspense } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingBag, ShoppingCart, Package, ClipboardCheck, BarChart3, LogOut, Settings, ArrowLeft, ScanLine } from 'lucide-react';
+import { ShoppingBag, ShoppingCart, Package, ClipboardCheck, BarChart3, LogOut, Settings, ArrowLeft, ScanLine, Repeat2 } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
 import { useAuth } from '@/lib/AuthContext';
 import { cn } from '@/lib/utils';
+import { availableQty } from '@/lib/stock';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -11,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 
 export default function AppLayout() {
-  const { count } = useCart();
+  const { count, addItem } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
   const { toast } = useToast();
@@ -19,6 +20,7 @@ export default function AppLayout() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [quickReordering, setQuickReordering] = useState(false);
   const isStaff = user && (user.role === 'admin' || user.role === 'staff');
 
   // Recent orders shown inside the account dialog (lazy: only fetches when opened).
@@ -49,6 +51,43 @@ export default function AppLayout() {
         : location.pathname.startsWith('/fulfillment') ? '/fulfillment'
         : '/shop';
       navigate(fallback);
+    }
+  };
+
+  // One-tap quick reorder: adds every item from the customer's most recent order
+  // back to the cart, skipping anything now out of stock.
+  const handleQuickReorder = async () => {
+    const lastOrder = recentOrders[0];
+    if (!lastOrder || !lastOrder.items?.length) {
+      toast({ title: 'No previous order to reorder', variant: 'destructive' });
+      return;
+    }
+    setQuickReordering(true);
+    try {
+      const ids = [...new Set((lastOrder.items || []).map((i) => i.product_id).filter((id) => /^[a-f0-9]{24}$/i.test(String(id))))];
+      const products = ids.length ? await base44.entities.Product.filter({ id: { $in: ids } }, '-created_date', ids.length) : [];
+      const byId = {};
+      for (const p of products) byId[p.id] = p;
+      let added = 0;
+      const skipped = [];
+      for (const item of lastOrder.items) {
+        const product = byId[item.product_id];
+        const available = product && product.is_active !== false ? availableQty(product) : 0;
+        if (!product || available <= 0) { skipped.push(item.name); continue; }
+        addItem({ id: product.id, name: product.name, unit_of_measure: product.unit_of_measure, price: product.price }, Number(item.quantity) || 1);
+        added++;
+      }
+      if (added > 0) {
+        toast({ title: `${added} item${added === 1 ? '' : 's'} added to cart`, description: skipped.length ? `Skipped (unavailable): ${skipped.join(', ')}` : undefined });
+        setSettingsOpen(false);
+        navigate('/cart');
+      } else {
+        toast({ title: 'Nothing to reorder', description: 'All items from your last order are unavailable.', variant: 'destructive' });
+      }
+    } catch (err) {
+      toast({ title: 'Reorder failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setQuickReordering(false);
     }
   };
 
@@ -181,6 +220,11 @@ export default function AppLayout() {
               <p className="text-sm font-medium">Recent Orders</p>
               <Link to="/orders" onClick={() => setSettingsOpen(false)} className="text-sm text-primary hover:underline">View all</Link>
             </div>
+            {recentOrders.length > 0 && (
+              <Button className="w-full h-11" onClick={handleQuickReorder} disabled={quickReordering}>
+                <Repeat2 className="h-4 w-4" /> {quickReordering ? 'Adding…' : 'Quick reorder last order'}
+              </Button>
+            )}
             {recentOrdersQuery.isLoading ? (
               <p className="text-sm text-muted-foreground">Loading…</p>
             ) : recentOrders.length === 0 ? (
