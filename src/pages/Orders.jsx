@@ -68,10 +68,10 @@ export default function Orders() {
     toast({ title: 'Added to cart', description: item.name });
   };
 
-  const reorderAll = (order) => {
+  const addItems = (items, emptyMsg = 'All selected items are unavailable.') => {
     let added = 0;
     const skipped = [];
-    for (const item of (order.items || [])) {
+    for (const item of items) {
       const product = stockMap[item.product_id];
       const available = product && product.is_active !== false ? availableQty(product) : 0;
       if (!product || available <= 0) { skipped.push(item.name); continue; }
@@ -85,9 +85,11 @@ export default function Orders() {
       });
       navigate('/cart');
     } else {
-      toast({ title: 'Nothing to reorder', description: 'All items from this order are unavailable.', variant: 'destructive' });
+      toast({ title: 'Nothing to reorder', description: emptyMsg, variant: 'destructive' });
     }
   };
+
+  const reorderAll = (order) => addItems(order.items || [], 'All items from this order are unavailable.');
 
   const groups = {};
   for (const o of orders) (groups[monthKey(o.created_date)] ||= []).push(o);
@@ -127,7 +129,7 @@ export default function Orders() {
           </button>
         </div>
 
-        <BuyAgain orders={orders} stockMap={stockMap} onAdd={reorderItem} />
+        <BuyAgain orders={orders} stockMap={stockMap} onAdd={reorderItem} onAddMany={addItems} />
 
         {groupKeys.map((key) => (
           <div key={key} className="space-y-2">
