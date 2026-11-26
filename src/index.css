@@ -29,6 +29,7 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    --app-header-height: 3.5rem;
     --font-heading: ui-sans-serif, system-ui, sans-serif;
     --font-body: ui-sans-serif, system-ui, sans-serif;
     --font-display: ui-sans-serif, system-ui, sans-serif;
@@ -116,5 +117,16 @@
   }
   .scroll-contain {
     overscroll-behavior: contain;
+  }
+  .px-safe {
+    padding-left: calc(1rem + env(safe-area-inset-left));
+    padding-right: calc(1rem + env(safe-area-inset-right));
+  }
+  .px-safe-sm {
+    padding-left: calc(0.5rem + env(safe-area-inset-left));
+    padding-right: calc(0.5rem + env(safe-area-inset-right));
+  }
+  .top-app-header {
+    top: calc(var(--app-header-height) + env(safe-area-inset-top));
   }
 }

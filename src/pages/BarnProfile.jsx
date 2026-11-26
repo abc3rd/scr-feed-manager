@@ -148,7 +148,7 @@ export default function BarnProfile() {
   return (
     <div className="min-h-screen bg-background pb-32">
       <header className="border-b bg-background/95 backdrop-blur pt-safe sticky top-0 z-20">
-        <div className="mx-auto max-w-2xl px-4 py-3">
+        <div className="mx-auto max-w-2xl px-safe py-3">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">SCR Stars Club · Barn Profile</p>
           <h1 className="font-heading font-bold text-xl mt-0.5">
             {authenticated
@@ -227,12 +227,12 @@ export default function BarnProfile() {
                           {out ? (
                             <span className="text-xs px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">Unavailable</span>
                           ) : item.tracks_stock === false ? null : (
-                            <span className="text-xs text-muted-foreground">{item.available} available</span>
+                            <span className="text-sm md:text-xs text-muted-foreground">{item.available} available</span>
                           )}
                         </div>
                         {checked && !out && (
                           <div className="flex items-center gap-1">
-                            <Button size="icon" variant="outline" className="h-9 w-9" onClick={() => setQty(item.product_id, qty - 1, item.available)}>
+                            <Button size="icon" variant="outline" className="h-11 w-11 md:h-9 md:w-9" onClick={() => setQty(item.product_id, qty - 1, item.available)}>
                               <Minus className="h-3 w-3" />
                             </Button>
                             <Input
@@ -241,7 +241,7 @@ export default function BarnProfile() {
                               onChange={(e) => setQty(item.product_id, e.target.value, item.available)}
                               className="h-9 w-14 text-center"
                             />
-                            <Button size="icon" variant="outline" className="h-9 w-9" onClick={() => setQty(item.product_id, qty + 1, item.available)}>
+                            <Button size="icon" variant="outline" className="h-11 w-11 md:h-9 md:w-9" onClick={() => setQty(item.product_id, qty + 1, item.available)}>
                               <Plus className="h-3 w-3" />
                             </Button>
                           </div>
@@ -269,7 +269,7 @@ export default function BarnProfile() {
       </main>
 
       <div className="fixed bottom-0 inset-x-0 z-30 border-t bg-background/95 backdrop-blur pb-safe">
-        <div className="mx-auto max-w-2xl px-4 py-3 space-y-2">
+        <div className="mx-auto max-w-2xl px-safe py-3 space-y-2">
           {authenticated ? (
             <>
               <div className="flex items-center justify-between text-sm">

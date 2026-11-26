@@ -128,7 +128,7 @@ export default function Orders() {
 
         {groupKeys.map((key) => (
           <div key={key} className="space-y-2">
-            <div className="sticky top-14 z-10 -mx-1 px-1 py-1 bg-background">
+            <div className="sticky top-app-header z-10 -mx-1 px-1 py-1 bg-background">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{monthLabel(key)}</p>
             </div>
             {groups[key].map((order) => {
@@ -161,11 +161,11 @@ export default function Orders() {
                             {item.quantity}× {item.name}
                           </span>
                           {out ? (
-                            <span className="text-xs text-muted-foreground shrink-0">unavailable</span>
+                            <span className="text-sm md:text-xs text-muted-foreground shrink-0">unavailable</span>
                           ) : (
                             <button
                               onClick={() => reorderItem(item)}
-                              className="h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-primary shrink-0"
+                              className="h-11 w-11 md:h-9 md:w-9 flex items-center justify-center text-muted-foreground hover:text-primary shrink-0"
                               aria-label={`Add ${item.name} to cart`}
                             >
                               <Plus className="h-4 w-4" />

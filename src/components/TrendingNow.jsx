@@ -18,7 +18,7 @@ export default function TrendingNow({ products, trending }) {
       <div className="flex items-center gap-2">
         <TrendingUp className="h-4 w-4 text-primary" />
         <h3 className="font-heading font-bold text-base">Trending Now</h3>
-        <span className="text-xs text-muted-foreground">Most ordered this week</span>
+        <span className="text-sm md:text-xs text-muted-foreground">Most ordered this week</span>
       </div>
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
         {items.map(({ product }) => (

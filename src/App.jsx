@@ -1,9 +1,9 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation, useNavigationType } from 'react-router-dom';
 import { ThemeProvider } from 'next-themes';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import React, { lazy, Suspense } from 'react';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -40,13 +40,24 @@ const PageLoader = () => (
 
 const AnimatedRoutes = () => {
   const location = useLocation();
+  const navType = useNavigationType();
+  const reduce = useReducedMotion();
+  const direction = navType === 'POP' ? -1 : 1;
+  const offsetX = reduce ? 0 : 24;
+  const variants = {
+    enter: (dir) => ({ x: dir > 0 ? offsetX : -offsetX, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir) => ({ x: dir > 0 ? -offsetX : offsetX, opacity: 0 }),
+  };
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="wait" custom={direction}>
       <motion.div
         key={location.pathname}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
+        custom={direction}
+        variants={variants}
+        initial="enter"
+        animate="center"
+        exit="exit"
         transition={{ duration: 0.18, ease: 'easeOut' }}
       >
         <Suspense fallback={<PageLoader />}>

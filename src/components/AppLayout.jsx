@@ -36,6 +36,11 @@ export default function AppLayout() {
     if (location.key !== 'default') canGoBackRef.current = true;
   }, [location.key]);
 
+  // Per-tab navigation stacks: each bottom tab remembers the last screen
+  // visited within it so switching tabs restores that screen, and re-tapping
+  // the active tab returns to its root. Routes and URLs are unchanged.
+  const lastByTab = useRef({});
+
   const goBack = () => {
     if (canGoBackRef.current) {
       navigate(-1);
@@ -77,12 +82,27 @@ export default function AppLayout() {
 
   const showBack = location.pathname !== '/' && !navItems.some((item) => item.to === location.pathname);
 
+  const belongsTo = (path, root) => path === root || path.startsWith(root + '/');
+  const tabRoots = navItems.map((item) => item.to);
+  const activeRoot = tabRoots.find((root) => belongsTo(location.pathname, root)) || null;
+  useEffect(() => {
+    if (activeRoot) lastByTab.current[activeRoot] = location.pathname;
+  }, [location.pathname, activeRoot]);
+
+  const handleTabClick = (root) => {
+    if (activeRoot === root) {
+      if (location.pathname !== root) navigate(root);
+    } else {
+      navigate(lastByTab.current[root] || root);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur pt-safe">
-        <div className="mx-auto max-w-2xl flex items-center justify-between px-4 h-14">
+        <div className="mx-auto max-w-2xl flex items-center justify-between px-safe h-14">
           {showBack ? (
-            <button onClick={goBack} className="flex items-center text-muted-foreground hover:text-foreground" aria-label="Go back">
+            <button onClick={goBack} className="h-11 w-11 md:h-auto md:w-auto flex items-center justify-center text-muted-foreground hover:text-foreground" aria-label="Go back">
               <ArrowLeft className="h-5 w-5" />
             </button>
           ) : (
@@ -110,23 +130,25 @@ export default function AppLayout() {
         </div>
       </header>
 
-      <main className="flex-1 mx-auto w-full max-w-2xl px-4 py-4 pb-24">
+      <main className="flex-1 mx-auto w-full max-w-2xl px-4 py-4 pb-24 scroll-contain">
         <Suspense fallback={<div className="flex items-center justify-center py-20"><div className="w-7 h-7 border-4 border-muted border-t-primary rounded-full animate-spin" /></div>}>
           <Outlet />
         </Suspense>
       </main>
 
       <nav className="fixed bottom-0 inset-x-0 z-30 border-t bg-background/95 backdrop-blur pb-safe">
-        <div className="mx-auto max-w-2xl flex items-stretch justify-around h-16 px-2">
+        <div className="mx-auto max-w-2xl flex items-stretch justify-around h-16 px-safe-sm">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item);
             return (
-              <Link
+              <button
                 key={item.to}
-                to={item.to}
+                type="button"
+                onClick={() => handleTabClick(item.to)}
+                aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'relative flex flex-col items-center justify-center gap-0.5 flex-1 text-sm',
+                  'relative flex flex-col items-center justify-center gap-0.5 flex-1 text-sm min-h-11',
                   active ? 'text-primary' : 'text-muted-foreground'
                 )}
               >
@@ -137,7 +159,7 @@ export default function AppLayout() {
                     {item.badge}
                   </span>
                 )}
-              </Link>
+              </button>
             );
           })}
         </div>

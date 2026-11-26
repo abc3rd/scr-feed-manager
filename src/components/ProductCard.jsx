@@ -33,7 +33,7 @@ export default function ProductCard({ product }) {
             <span className="font-heading font-bold">${Number(product.price).toFixed(2)}</span>
           )}
           <Button size="sm" className="h-11" disabled={outOfStock || needsPrice} onClick={() => addItem(product)}>
-            {outOfStock ? <span className="text-xs">Sold out</span> : <Plus className="h-4 w-4" />}
+            {outOfStock ? <span className="text-sm md:text-xs">Sold out</span> : <Plus className="h-4 w-4" />}
           </Button>
         </div>
         {tracksStock(product) && !outOfStock && available <= 5 && (

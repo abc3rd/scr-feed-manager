@@ -231,7 +231,7 @@ export default function Count() {
           {results.map((p) => (
             <button key={p.id} onClick={() => pick(p)} className="w-full text-left p-3 hover:bg-accent">
               <p className="text-sm font-medium">{p.name}</p>
-              {p.sku && <p className="text-xs text-muted-foreground">{p.sku}</p>}
+              {p.sku && <p className="text-sm md:text-xs text-muted-foreground">{p.sku}</p>}
             </button>
           ))}
         </Card>
@@ -262,11 +262,11 @@ export default function Count() {
               <div key={l.product_id} className="flex items-center justify-between p-3 gap-3">
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate">{l.name}</p>
-                  {l.sku && <p className="text-xs text-muted-foreground">{l.sku}</p>}
+                  {l.sku && <p className="text-sm md:text-xs text-muted-foreground">{l.sku}</p>}
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-lg font-semibold tabular-nums">{l.counted_qty}</span>
-                  <button onClick={() => setLines((ls) => ls.filter((x) => x.product_id !== l.product_id))} aria-label={`Remove ${l.name}`} className="h-9 w-9 flex items-center justify-center text-muted-foreground">
+                  <button onClick={() => setLines((ls) => ls.filter((x) => x.product_id !== l.product_id))} aria-label={`Remove ${l.name}`} className="h-11 w-11 md:h-9 md:w-9 flex items-center justify-center text-muted-foreground">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
