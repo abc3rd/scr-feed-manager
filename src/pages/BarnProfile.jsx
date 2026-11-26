@@ -190,7 +190,10 @@ export default function BarnProfile() {
 
         <div>
           <h2 className="font-semibold mb-2">Quick order</h2>
-          <p className="text-sm text-muted-foreground mb-3">Check the items you need, set quantities, then place your order.</p>
+          <p className="text-sm text-muted-foreground mb-3">
+            Check the items you need, set quantities, then pay in the SCR Online checkout. Need something else?{' '}
+            <button className="text-primary underline" onClick={() => navigate('/shop')}>Browse the full shop</button>
+          </p>
           <div className="space-y-2">
             {items.map((item) => {
               const sel = selection[item.product_id];
@@ -223,7 +226,7 @@ export default function BarnProfile() {
                           ))}
                           {out ? (
                             <span className="text-xs px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">Unavailable</span>
-                          ) : (
+                          ) : item.tracks_stock === false ? null : (
                             <span className="text-xs text-muted-foreground">{item.available} available</span>
                           )}
                         </div>
