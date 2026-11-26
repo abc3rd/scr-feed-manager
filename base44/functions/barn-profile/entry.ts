@@ -65,19 +65,20 @@ export default async function (req) {
       .slice(0, 8)
       .map((e) => e.product_id);
 
-    // Fetch all active products once; build a lookup map.
-    const allProducts = await base44.asServiceRole.entities.Product.filter(
-      { is_active: true },
-      '-created_date',
-      200
-    );
-    const productById = new Map(allProducts.map((p) => [p.id, p]));
-    const available = (p) =>
-      Number(p.stock_quantity || 0) - Number(p.reserved_quantity || 0) > 0;
+    // Products synced from Shopify keep selling at zero stock (the yard count
+    // at pick time is the check), so only tracked products are limited.
+    const availableQty = (p) =>
+      p.track_stock === false
+        ? 999
+        : Number(p.stock_quantity || 0) - Number(p.reserved_quantity || 0);
+    const available = (p) => availableQty(p) > 0;
 
-    const hay = allProducts
-      .filter((p) => p.category === 'hay' && available(p))
-      .slice(0, 12);
+    // The catalog is the whole Shopify store, so fetch only what this page shows.
+    const hay = (await base44.asServiceRole.entities.Product.filter(
+      { is_active: true, category: 'hay' },
+      'name',
+      60
+    )).filter(available).slice(0, 24);
 
     // Popular items across all orders (top sellers).
     const allOrders = await base44.asServiceRole.entities.Order.list('-created_date', 500);
@@ -93,6 +94,16 @@ export default async function (req) {
       .sort((a, b) => b.units - a.units)
       .slice(0, 8)
       .map((e) => e.product_id);
+
+    const wantedIds = [...new Set([...(authenticated ? mostOrderedIds : []), ...popularIds])];
+    const ordered = wantedIds.length
+      ? await base44.asServiceRole.entities.Product.filter(
+          { id: { $in: wantedIds }, is_active: true },
+          'name',
+          wantedIds.length
+        )
+      : [];
+    const productById = new Map([...ordered, ...hay].map((p) => [p.id, p]));
 
     // Active promo announcements.
     const promos = await base44.asServiceRole.entities.Announcement.filter(
@@ -113,7 +124,8 @@ export default async function (req) {
         category: p.category,
         unit_of_measure: p.unit_of_measure,
         price: Number(p.price),
-        available: Number(p.stock_quantity || 0) - Number(p.reserved_quantity || 0),
+        available: availableQty(p),
+        tracks_stock: p.track_stock !== false,
         tags: tag,
       });
     };
