@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -10,17 +10,33 @@ import LoyaltyBadge from '@/components/LoyaltyBadge';
 import LoyaltyProgress from '@/components/LoyaltyProgress';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 import PullToRefresh from '@/components/PullToRefresh';
-import { RotateCw } from 'lucide-react';
+import { RotateCw, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
-const CATEGORIES = ['all', 'hay', 'feed', 'grain', 'supplements', 'bedding', 'equipment'];
+const CATEGORIES = ['all', 'hay', 'feed', 'grain', 'supplements', 'bedding', 'equipment', 'other'];
+const PAGE_SIZE = 60;
+const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export default function Shop() {
   const { user, isAuthenticated } = useAuth();
   const [category, setCategory] = useState('all');
+  const [search, setSearch] = useState('');
+  const [term, setTerm] = useState('');
+  useEffect(() => {
+    const t = setTimeout(() => setTerm(search.trim()), 300);
+    return () => clearTimeout(t);
+  }, [search]);
 
+  // The catalog is the full Shopify store (well over a thousand items), so
+  // category and search are applied on the server.
   const productsQuery = useQuery({
-    queryKey: ['products', 'active'],
-    queryFn: () => base44.entities.Product.filter({ is_active: true }, '-created_date', 100),
+    queryKey: ['products', 'active', category, term],
+    queryFn: () => {
+      const q = { is_active: true };
+      if (category !== 'all') q.category = category;
+      if (term) q.name = { $regex: escapeRegex(term), $options: 'i' };
+      return base44.entities.Product.filter(q, 'name', PAGE_SIZE);
+    },
   });
   const announcementsQuery = useQuery({
     queryKey: ['announcements', 'active'],
@@ -39,7 +55,7 @@ export default function Shop() {
 
   const refresh = () => Promise.all([productsQuery.refetch(), announcementsQuery.refetch(), trendingQuery.refetch()]);
 
-  const filtered = category === 'all' ? products : products.filter(p => p.category === category);
+  const filtered = products;
   const catalogError = /** @type {{ status?: number, response?: { status?: number } } | null} */ (productsQuery.error);
   const status = catalogError?.status || catalogError?.response?.status;
   const signInRequired = status === 401 || status === 403;
@@ -78,6 +94,17 @@ export default function Shop() {
 
       <TrendingNow products={products} trending={trendingQuery.data?.trending} />
 
+      <div className="relative">
+        <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search feed, hay, supplies"
+          className="h-11 pl-9"
+          aria-label="Search products"
+        />
+      </div>
+
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
         {CATEGORIES.map(c => (
           <button
@@ -111,11 +138,16 @@ export default function Shop() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <p className="text-center text-muted-foreground py-12">No products in this category.</p>
+        <p className="text-center text-muted-foreground py-12">{term ? `Nothing matches "${term}".` : 'No products in this category.'}</p>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
-          {filtered.map(p => <ProductCard key={p.id} product={p} />)}
-        </div>
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            {filtered.map(p => <ProductCard key={p.id} product={p} />)}
+          </div>
+          {filtered.length >= PAGE_SIZE && (
+            <p className="text-center text-sm text-muted-foreground">Showing the first {PAGE_SIZE}. Search or pick a category to find more.</p>
+          )}
+        </>
       )}
     </div>
     </PullToRefresh>
