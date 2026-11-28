@@ -33,7 +33,7 @@ function makeEntity(rows, name) {
 
 export function useFakeBase44({ user = null, products = [], users = [] } = {}) {
   const tables = {};
-  const names = ['Product', 'Order', 'PickTicket', 'User'];
+  const names = ['Product', 'Order', 'PickTicket', 'User', 'StarsMember'];
   const entities = {};
   for (const n of names) {
     tables[n] = new Map();
@@ -43,10 +43,11 @@ export function useFakeBase44({ user = null, products = [], users = [] } = {}) {
   for (const u of users) tables.User.set(u.id, { ...u });
   if (user) tables.User.set(user.id, { ...user });
 
+  const integrations = { Core: { UploadFile: async ({ file }) => ({ file_url: `https://files.test/${file.name}` }) } };
   current = {
     auth: { me: async () => (user ? structuredClone(tables.User.get(user.id)) : null) },
     entities,
-    asServiceRole: { entities },
+    asServiceRole: { entities, integrations },
   };
 
   const rows = (n) => [...tables[n].values()];
@@ -55,6 +56,7 @@ export function useFakeBase44({ user = null, products = [], users = [] } = {}) {
     orders: () => rows('Order'),
     tickets: () => rows('PickTicket'),
     user: (id) => tables.User.get(id),
+    rows,
     signIn: (u) => { user = u; tables.User.set(u.id, { ...u }); },
   };
 }
