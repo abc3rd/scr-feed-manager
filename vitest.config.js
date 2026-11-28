@@ -11,6 +11,7 @@ export default defineConfig({
       { find: /^npm:@base44\/sdk@.*$/, replacement: fake('base44-sdk.js') },
       { find: /^npm:stripe@.*$/, replacement: fake('stripe.js') },
       { find: 'base44:runtime', replacement: fake('base44-runtime.js') },
+      { find: /^npm:qrcode@.*$/, replacement: fake('qrcode.js') },
     ],
   },
   test: {
