@@ -66,7 +66,7 @@ export function ActivateBarnQr({ token, status, navigate }) {
           : `Barn QR ${status.code} was sent to ${status.sent_to}. Sign in or create your account with that same email to link it to you. It takes a minute.`}
       </p>
       {status.wrong_account ? (
-        <Button className="h-11 w-full" onClick={() => base44.auth.logout(`/barn/${token}`)}>Sign out</Button>
+        <Button className="h-11 w-full" onClick={() => base44.auth.logout(window.location.href)}>Sign out</Button>
       ) : (
         <div className="grid grid-cols-2 gap-2 w-full">
           <Button variant="outline" className="h-11" onClick={() => navigate(signInPath(token))}>Sign in</Button>
