@@ -1,0 +1,112 @@
+{
+  "name": "StarsMember",
+  "type": "object",
+  "description": "A Stars Club sign-up and the Barn QR issued to it. One per email. The Barn QR is linked to the Member's app account (User.barn_qr_id) only when they sign in with this same email.",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "The Barn QR code, e.g. SCR-7KQ4MX. Encoded in the QR as https://app.scrfeed.com/barn/<code>."
+    },
+    "email": {
+      "type": "string",
+      "description": "Lower-cased email the Barn QR was sent to. Only an account signed in with this email can activate it."
+    },
+    "name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "issued",
+        "active"
+      ],
+      "default": "issued",
+      "description": "issued = emailed, not yet linked to an account. active = linked to the Member's account."
+    },
+    "qr_image_url": {
+      "type": "string"
+    },
+    "issued_at": {
+      "type": "string"
+    },
+    "activated_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "user_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The app account the Barn QR was linked to."
+    },
+    "source": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "code",
+    "email",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        }
+      ]
+    }
+  }
+}
