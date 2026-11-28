@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Minus, Plus, Truck, Store, Megaphone, AlertCircle } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
+import { ActivateBarnQr, BarnQrBadge, StaffCheck } from '@/components/BarnQrPanel';
 
 const TAG_LABELS = {
   'most-ordered': 'Your usual',
@@ -32,6 +33,19 @@ export default function BarnProfile() {
     queryFn: () => base44.functions.invoke('barn-profile', { token }).then((r) => r.data),
     retry: false,
   });
+
+  // Who this Barn QR belongs to. Opening it signed in with the email it was
+  // sent to links it to that account (activation).
+  const statusQuery = useQuery({
+    queryKey: ['barn-qr-status', token],
+    queryFn: () => base44.functions.invoke('barn-qr-status', { code: token }).then((r) => r.data),
+    retry: false,
+  });
+  const qrStatus = statusQuery.data;
+  const { refetch: refetchProfile } = profileQuery;
+  useEffect(() => {
+    if (qrStatus?.just_activated) refetchProfile();
+  }, [qrStatus?.just_activated, refetchProfile]);
 
   const [selection, setSelection] = useState({}); // product_id -> { checked, quantity }
   const [fulfillmentType, setFulfillmentType] = useState('pickup');
@@ -125,12 +139,15 @@ export default function BarnProfile() {
     }
   };
 
-  if (profileQuery.isLoading) {
+  if (profileQuery.isLoading || (profileQuery.isError && statusQuery.isLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-7 w-7 animate-spin text-muted-foreground" />
       </div>
     );
+  }
+  if ((profileQuery.isError || profileQuery.data?.error) && qrStatus?.status === 'issued') {
+    return <ActivateBarnQr token={token} status={qrStatus} navigate={navigate} />;
   }
   if (profileQuery.isError || profileQuery.data?.error) {
     return (
@@ -162,6 +179,9 @@ export default function BarnProfile() {
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-4 space-y-5">
+        <StaffCheck status={qrStatus} />
+        <BarnQrBadge status={qrStatus} />
+
         {promos.length > 0 && (
           <div className="space-y-2">
             {promos.map((p, i) => (
